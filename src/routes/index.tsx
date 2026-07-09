@@ -1,24 +1,57 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Suspense } from "react";
+import { useMode } from "@/lib/mode";
+import { portfolioQuery } from "@/lib/portfolio";
+import { ModeSwitch } from "@/components/site/mode-switch";
+import { ModeTransition } from "@/components/site/mode-transition";
+import { CreatorHero, CreatorSectionRenderer } from "@/components/site/creator-sections";
+import { DeveloperHero, DeveloperSectionRenderer } from "@/components/site/developer-sections";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <>
+      <div className="texture-overlay" aria-hidden />
+      <ModeSwitch />
+      <ModeTransition />
+      <Suspense fallback={<div className="min-h-screen bg-background" />}>
+        <SiteContent />
+      </Suspense>
+      <SiteFooter />
+    </>
+  );
+}
+
+function SiteContent() {
+  const { mode } = useMode();
+  const { data } = useSuspenseQuery(portfolioQuery(mode));
+  const { sections, items, testimonials, settings } = data;
+  return (
+    <main key={mode} className={mode === "creator" ? "animate-develop" : "animate-boot"}>
+      {mode === "creator" ? (
+        <CreatorHero title={settings?.hero_title ?? ""} subtitle={settings?.hero_subtitle ?? null} media={settings?.hero_media_url ?? null} />
+      ) : (
+        <DeveloperHero title={settings?.hero_title ?? ""} subtitle={settings?.hero_subtitle ?? null} />
+      )}
+      {sections.map((s) =>
+        mode === "creator" ? (
+          <CreatorSectionRenderer key={s.id} section={s} items={items} testimonials={testimonials} />
+        ) : (
+          <DeveloperSectionRenderer key={s.id} section={s} items={items} />
+        ),
+      )}
+    </main>
+  );
+}
+
+function SiteFooter() {
+  return (
+    <footer className="border-t border-border py-8 text-center font-body text-xs text-muted-foreground">
+      <p>© {new Date().getFullYear()} Alex Rivers · <a href="/auth" className="underline-offset-4 hover:underline">admin</a></p>
+    </footer>
   );
 }

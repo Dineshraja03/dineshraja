@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Eye, EyeOff, Plus, Trash2, Upload } from "lucide-react";
@@ -13,7 +13,7 @@ type Section = { id: string; mode: string; key: string; title: string };
 type Item = {
   id: string; section_id: string; title: string; subtitle: string | null; body: string | null;
   media_url: string | null; media_url_secondary: string | null; alt_text: string | null;
-  tags: string[]; order_index: number; link_url: string | null; is_visible: boolean; meta: Record<string, unknown>;
+  tags: string[]; order_index: number; link_url: string | null; is_visible: boolean; meta: unknown;
 };
 
 function ItemsPage() {
@@ -42,11 +42,11 @@ function ItemsPage() {
   const save = useMutation({
     mutationFn: async (values: Partial<Item> & { id?: string }) => {
       if (values.id) {
-        const { error } = await supabase.from("section_items").update(values).eq("id", values.id);
+        const { error } = await supabase.from("section_items").update(values as never).eq("id", values.id);
         if (error) throw error;
       } else {
         const nextOrder = (items[items.length - 1]?.order_index ?? -1) + 1;
-        const { error } = await supabase.from("section_items").insert({ ...values, section_id: active!, order_index: nextOrder });
+        const { error } = await supabase.from("section_items").insert({ ...values, section_id: active!, order_index: nextOrder } as never);
         if (error) throw error;
       }
     },

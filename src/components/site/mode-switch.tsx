@@ -20,7 +20,7 @@ export function ModeSwitch() {
         transition={{ duration: 0.35, ease: "easeOut" }}
         className="flex h-6 w-6 items-center justify-center"
       >
-        {isDev ? <TerminalIcon /> : <ApertureIcon />}
+        {isDev ? <ApertureIcon /> : <TerminalIcon />}
       </motion.div>
       <span className="sr-only">Toggle site mode</span>
     </button>

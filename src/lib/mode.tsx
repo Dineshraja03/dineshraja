@@ -6,6 +6,7 @@ const STORAGE_KEY = "portfolio.mode";
 type ModeCtx = {
   mode: Mode;
   isTransitioning: boolean;
+  transitionTo: Mode | null;
   toggle: () => void;
   setMode: (m: Mode) => void;
   reducedMotion: boolean;
@@ -16,6 +17,7 @@ const Ctx = createContext<ModeCtx | null>(null);
 export function ModeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<Mode>("creator");
   const [isTransitioning, setTransitioning] = useState(false);
+  const [transitionTo, setTransitionTo] = useState<Mode | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const timerRef = useRef<number | null>(null);
 
@@ -49,6 +51,11 @@ export function ModeProvider({ children }: { children: ReactNode }) {
   const toggle = useCallback(() => {
     const dur = reducedMotion ? 220 : 850;
     setTransitioning(true);
+    setModeState((prev) => {
+      const next: Mode = prev === "creator" ? "developer" : "creator";
+      setTransitionTo(next);
+      return prev;
+    });
     // swap mode near the mid-point so the reveal shows the new theme
     if (timerRef.current) window.clearTimeout(timerRef.current);
     const half = reducedMotion ? 100 : 380;
@@ -59,10 +66,13 @@ export function ModeProvider({ children }: { children: ReactNode }) {
         return next;
       });
     }, half);
-    timerRef.current = window.setTimeout(() => setTransitioning(false), dur) as unknown as number;
+    timerRef.current = window.setTimeout(() => {
+      setTransitioning(false);
+      setTransitionTo(null);
+    }, dur) as unknown as number;
   }, [reducedMotion]);
 
-  const value = useMemo(() => ({ mode, isTransitioning, toggle, setMode, reducedMotion }), [mode, isTransitioning, toggle, setMode, reducedMotion]);
+  const value = useMemo(() => ({ mode, isTransitioning, transitionTo, toggle, setMode, reducedMotion }), [mode, isTransitioning, transitionTo, toggle, setMode, reducedMotion]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

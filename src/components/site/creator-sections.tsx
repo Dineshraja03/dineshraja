@@ -1,30 +1,212 @@
-import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { useMemo, useRef, useState } from "react";
+import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
 import type { Section, SectionItem, Testimonial } from "@/lib/portfolio";
 import { itemsFor } from "@/lib/portfolio";
 
-export function CreatorHero({ title, subtitle, media }: { title: string; subtitle: string | null; media: string | null }) {
+const NICHES: { title: string; hint: string; span: string }[] = [
+  { title: "Portrait", hint: "Studio · Editorial", span: "col-span-2 row-span-2" },
+  { title: "Landscape", hint: "Wide · Golden hour", span: "col-span-2 row-span-1" },
+  { title: "Street", hint: "Candid · Documentary", span: "col-span-1 row-span-1" },
+  { title: "Product", hint: "Macro · Commercial", span: "col-span-1 row-span-1" },
+  { title: "Wedding", hint: "Story · Cinematic", span: "col-span-2 row-span-1" },
+  { title: "Fashion", hint: "Look · Movement", span: "col-span-2 row-span-1" },
+];
+
+/**
+ * Scroll-driven 3D camera hero. The section is 220vh tall with a sticky
+ * inner viewport; a CSS-3D camera rotates from back-facing → screen-facing
+ * and scales up so the screen (a bento of photography niches) covers the
+ * viewport at the end of the scroll range.
+ */
+export function CreatorHero({ title, subtitle }: { title: string; subtitle: string | null; media: string | null }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+
+  const titleOpacity = useTransform(scrollYProgress, [0, 0.15, 0.3], [1, 0.6, 0]);
+  const titleY = useTransform(scrollYProgress, [0, 0.3], [0, -40]);
+
+  // Camera: rotate from back (-180deg) to front (0deg), then keep front
+  const rotateY = useTransform(scrollYProgress, [0, 0.55, 1], [-180, -10, 0]);
+  // Grow from a compact camera in the corner to viewport-covering at the end
+  const scale = useTransform(scrollYProgress, [0, 0.55, 1], [0.9, 1.1, 2.2]);
+  const cameraY = useTransform(scrollYProgress, [0, 0.55, 1], [40, 0, -20]);
+
   return (
-    <section className="relative isolate flex min-h-[92vh] w-full items-end overflow-hidden">
-      {media && (
-        <img src={media} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover animate-develop" />
-      )}
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-16 md:pb-24">
-        <motion.h1
-          initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.1 }}
-          className="font-heading text-5xl leading-[0.95] tracking-tight text-foreground md:text-8xl"
+    <section
+      ref={ref}
+      className="relative isolate w-full"
+      style={{ height: "220vh" }}
+    >
+      <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden">
+        {/* Background wash */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_oklch(0.93_0.05_75)_0%,_oklch(0.972_0.018_85)_60%)]" />
+
+        {/* Title */}
+        <motion.div
+          style={{ opacity: titleOpacity, y: titleY }}
+          className="pointer-events-none absolute inset-x-0 top-[10vh] z-10 mx-auto max-w-6xl px-6 text-center"
         >
-          {title}
-        </motion.h1>
-        {subtitle && (
-          <motion.p
-            initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.25 }}
-            className="mt-6 max-w-xl font-body text-base text-foreground/80 md:text-lg"
-          >{subtitle}</motion.p>
-        )}
+          <h1 className="font-heading text-5xl leading-[0.95] tracking-tight text-foreground md:text-7xl">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="mx-auto mt-6 max-w-xl font-body text-base text-foreground/70 md:text-lg">{subtitle}</p>
+          )}
+          <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/60 px-4 py-1.5 font-body text-xs text-muted-foreground backdrop-blur">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
+            scroll — power on the camera
+          </div>
+        </motion.div>
+
+        {/* 3D camera stage */}
+        <div className="absolute inset-0 flex items-center justify-center" style={{ perspective: "1600px" }}>
+          <motion.div
+            className="relative"
+            style={{
+              rotateY,
+              scale,
+              y: cameraY,
+              transformStyle: "preserve-3d",
+              width: "min(78vw, 620px)",
+              aspectRatio: "16 / 10",
+            }}
+          >
+            <CameraBack />
+            <CameraFront scrollYProgress={scrollYProgress} />
+          </motion.div>
+        </div>
       </div>
     </section>
+  );
+}
+
+function CameraBack() {
+  return (
+    <div
+      className="absolute inset-0 rounded-[22px] border border-black/20 shadow-2xl"
+      style={{
+        backfaceVisibility: "hidden",
+        background:
+          "linear-gradient(160deg, oklch(0.32 0.02 40) 0%, oklch(0.22 0.02 40) 55%, oklch(0.14 0.01 40) 100%)",
+      }}
+    >
+      {/* Grip */}
+      <div className="absolute -left-[6%] top-[10%] h-[80%] w-[12%] rounded-l-[22px] bg-black/70 shadow-inner" />
+      {/* Lens */}
+      <div className="absolute left-1/2 top-1/2 h-[70%] -translate-x-1/2 -translate-y-1/2 aspect-square rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle at 40% 35%, oklch(0.35 0.02 220) 0%, oklch(0.1 0.005 220) 55%, #000 100%)",
+          boxShadow: "0 0 0 8px oklch(0.18 0.01 40), 0 0 0 10px oklch(0.28 0.02 40), inset 0 0 30px rgba(0,0,0,0.9)",
+        }}
+      >
+        <div className="absolute inset-[18%] rounded-full"
+          style={{
+            background: "radial-gradient(circle at 35% 30%, oklch(0.55 0.08 220 / 0.7), transparent 60%), radial-gradient(circle at 70% 75%, oklch(0.63 0.14 40 / 0.5), transparent 55%), #000",
+            boxShadow: "inset 0 0 20px rgba(255,255,255,0.15)",
+          }}
+        />
+        <div className="absolute left-[22%] top-[18%] h-[18%] w-[18%] rounded-full bg-white/25 blur-sm" />
+      </div>
+      {/* Top plate */}
+      <div className="absolute left-[10%] right-[10%] top-[-6%] h-[10%] rounded-t-lg bg-black/80" />
+      {/* Brand mark */}
+      <div className="absolute bottom-3 right-4 font-heading text-[10px] uppercase tracking-[0.3em] text-white/40">
+        alex — rivers
+      </div>
+    </div>
+  );
+}
+
+function CameraFront({ scrollYProgress }: { scrollYProgress: MotionValue<number> }) {
+  // Fade the screen contents in once the flip is essentially done
+  const screenOpacity = useTransform(scrollYProgress, [0.4, 0.6], [0, 1]);
+  const [hovered, setHovered] = useState<number | null>(null);
+  return (
+    <div
+      className="absolute inset-0 rounded-[22px] border border-black/30 shadow-2xl"
+      style={{
+        backfaceVisibility: "hidden",
+        transform: "rotateY(180deg)",
+        background:
+          "linear-gradient(160deg, oklch(0.28 0.02 40) 0%, oklch(0.18 0.01 40) 60%, oklch(0.1 0.005 40) 100%)",
+      }}
+    >
+      {/* Top control strip */}
+      <div className="absolute inset-x-3 top-2 flex items-center justify-between text-[10px] text-white/60 font-mono-token">
+        <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" /> REC</span>
+        <span>ISO 400 · f/1.8 · 1/250</span>
+        <span>◐ 87%</span>
+      </div>
+      {/* Screen */}
+      <motion.div
+        style={{ opacity: screenOpacity }}
+        className="absolute left-[5%] right-[5%] top-[12%] bottom-[10%] overflow-hidden rounded-lg border border-white/10"
+      >
+        <div className="absolute inset-0"
+          style={{ background: "linear-gradient(140deg, oklch(0.22 0.03 80) 0%, oklch(0.16 0.02 40) 100%)" }}
+        />
+        {/* Menu header */}
+        <div className="relative flex items-center justify-between px-3 py-2 font-mono-token text-[10px] uppercase tracking-widest text-white/80">
+          <span>menu · niches</span>
+          <span>◄ ▲ ▼ ►</span>
+        </div>
+        {/* Bento */}
+        <div className="relative grid h-[calc(100%-28px)] grid-cols-4 grid-rows-3 gap-1.5 p-2">
+          {NICHES.map((n, i) => {
+            const active = hovered === i;
+            return (
+              <button
+                key={n.title}
+                type="button"
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered((h) => (h === i ? null : h))}
+                onFocus={() => setHovered(i)}
+                onBlur={() => setHovered((h) => (h === i ? null : h))}
+                className={`${n.span} group relative overflow-hidden rounded-md border text-left transition-all duration-300`}
+                style={{
+                  borderColor: active ? "oklch(0.85 0.16 40)" : "rgba(255,255,255,0.08)",
+                  background: active
+                    ? "linear-gradient(135deg, oklch(0.63 0.14 40 / 0.9), oklch(0.85 0.16 40 / 0.7))"
+                    : "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
+                  boxShadow: active ? "0 0 24px oklch(0.85 0.16 40 / 0.4)" : "none",
+                }}
+              >
+                <div className="absolute inset-0 opacity-30 mix-blend-overlay"
+                  style={{
+                    backgroundImage:
+                      "repeating-linear-gradient(45deg, rgba(255,255,255,0.1) 0 1px, transparent 1px 4px)",
+                  }}
+                />
+                <div className="relative flex h-full flex-col justify-between p-2">
+                  <div className={`font-heading text-[13px] leading-none md:text-base ${active ? "text-white" : "text-white/85"}`}>
+                    {n.title}
+                  </div>
+                  <div className={`font-mono-token text-[8px] uppercase tracking-widest md:text-[9px] ${active ? "text-white/90" : "text-white/55"}`}>
+                    {n.hint}
+                  </div>
+                </div>
+                {active && (
+                  <span className="absolute right-1.5 top-1.5 font-mono-token text-[8px] text-white/90">◉ selected</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        {/* Corner marks */}
+        <div className="pointer-events-none absolute inset-2 border border-white/10" />
+        <div className="pointer-events-none absolute left-3 top-3 h-2 w-2 border-l border-t border-white/40" />
+        <div className="pointer-events-none absolute right-3 top-3 h-2 w-2 border-r border-t border-white/40" />
+        <div className="pointer-events-none absolute left-3 bottom-3 h-2 w-2 border-l border-b border-white/40" />
+        <div className="pointer-events-none absolute right-3 bottom-3 h-2 w-2 border-r border-b border-white/40" />
+      </motion.div>
+      {/* Buttons */}
+      <div className="absolute right-4 top-1/2 flex -translate-y-1/2 flex-col gap-1.5">
+        {[0, 1, 2, 3].map((i) => (
+          <span key={i} className="h-2 w-2 rounded-full bg-white/25" />
+        ))}
+      </div>
+    </div>
   );
 }
 

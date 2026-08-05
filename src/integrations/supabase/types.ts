@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_read: boolean
+          message: string
+          mode: Database["public"]["Enums"]["site_mode"]
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_read?: boolean
+          message: string
+          mode?: Database["public"]["Enums"]["site_mode"]
+          name: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          mode?: Database["public"]["Enums"]["site_mode"]
+          name?: string
+        }
+        Relationships: []
+      }
       section_items: {
         Row: {
           alt_text: string | null

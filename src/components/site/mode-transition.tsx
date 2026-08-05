@@ -32,7 +32,7 @@ export function ModeTransition() {
               style={{ color: "oklch(0.82 0.18 145)" }}
               initial={{ opacity: 0 }}
               animate={{ opacity: [0, 0, 1, 1, 0] }}
-              transition={{ duration: reducedMotion ? 0.18 : 0.85, times: [0, 0.35, 0.45, 0.75, 1] }}
+              transition={{ duration: reducedMotion ? 0.22 : 1.9, times: [0, 0.35, 0.45, 0.75, 1] }}
             >
               <span>&gt; loading dev.env...</span>
               <span className="cursor-blink ml-1">▊</span>
@@ -42,7 +42,7 @@ export function ModeTransition() {
               className="relative z-10 flex flex-col items-center gap-3"
               initial={{ opacity: 0 }}
               animate={{ opacity: [0, 0, 1, 1, 0] }}
-              transition={{ duration: reducedMotion ? 0.18 : 0.85, times: [0, 0.35, 0.45, 0.75, 1] }}
+              transition={{ duration: reducedMotion ? 0.22 : 1.9, times: [0, 0.35, 0.45, 0.75, 1] }}
             >
               <ShutterMark />
               <span
@@ -74,7 +74,7 @@ function ApertureCurtain({ bladeColor = "#000" }: { bladeColor?: string }) {
           }}
           initial={{ scale: 0.2, opacity: 0.9 }}
           animate={{ scale: [0.2, 1.05, 1.05, 0.2], opacity: [0.9, 1, 1, 0] }}
-          transition={{ duration: 0.85, times: [0, 0.35, 0.65, 1], ease: "easeInOut", delay: i * 0.015 }}
+          transition={{ duration: 1.9, times: [0, 0.35, 0.65, 1], ease: "easeInOut", delay: i * 0.015 }}
         />
       ))}
     </div>
@@ -96,7 +96,7 @@ function PaperCurtain() {
           clipPath: ["inset(100% 0% 0% 0%)", "inset(0% 0% 0% 0%)", "inset(0% 0% 0% 0%)", "inset(0% 0% 100% 0%)"],
           opacity: [0.95, 1, 1, 0],
         }}
-        transition={{ duration: 0.85, times: [0, 0.35, 0.65, 1], ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 1.9, times: [0, 0.35, 0.65, 1], ease: [0.22, 1, 0.36, 1] }}
       />
       {/* film grain overlay */}
       <motion.div
@@ -108,7 +108,7 @@ function PaperCurtain() {
         }}
         initial={{ opacity: 0 }}
         animate={{ opacity: [0, 0.18, 0.18, 0] }}
-        transition={{ duration: 0.85, times: [0, 0.35, 0.65, 1] }}
+        transition={{ duration: 1.9, times: [0, 0.35, 0.65, 1] }}
       />
     </div>
   );

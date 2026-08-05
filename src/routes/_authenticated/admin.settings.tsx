@@ -59,11 +59,6 @@ function SettingsPage() {
           <Field label="Hero media URL"><input value={form.hero_media_url ?? ""} onChange={(e) => setForm({ ...form, hero_media_url: e.target.value || null })} className={inputCls} /></Field>
           <Field label="SEO title"><input value={form.seo_title ?? ""} onChange={(e) => setForm({ ...form, seo_title: e.target.value || null })} className={inputCls} /></Field>
           <Field label="SEO description"><textarea rows={2} value={form.seo_description ?? ""} onChange={(e) => setForm({ ...form, seo_description: e.target.value || null })} className={inputCls} /></Field>
-          <Field label="Accent color override (optional)">
-            <input value={(form.theme_overrides?.accent as string) ?? ""}
-              onChange={(e) => setForm({ ...form, theme_overrides: { ...(form.theme_overrides ?? {}), accent: e.target.value } })}
-              placeholder="#c96b3c or oklch(0.63 0.14 40)" className={inputCls} />
-          </Field>
           <button className="mt-2 self-start rounded-md bg-accent px-5 py-2 text-sm text-accent-foreground">Save</button>
         </form>
       )}

@@ -2,6 +2,9 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import type { Section, SectionItem, Testimonial } from "@/lib/portfolio";
 import { itemsFor } from "@/lib/portfolio";
+import { sendContactMessage } from "@/lib/contact";
+import { toast } from "sonner";
+import { z } from "zod";
 
 export function CreatorHero({ title, subtitle, media }: { title: string; subtitle: string | null; media: string | null }) {
   return (
@@ -203,17 +206,35 @@ function Testimonials({ section, testimonials }: { section: Section; testimonial
 }
 
 function Contact({ section }: { section: Section }) {
+  const [sending, setSending] = useState(false);
   return (
     <section className="py-20 md:py-28">
       <SectionHeader section={section} />
       <form
-        onSubmit={(e) => { e.preventDefault(); alert("Thanks — I'll be in touch soon."); }}
+        onSubmit={async (e) => {
+          e.preventDefault();
+          const fd = new FormData(e.currentTarget);
+          const form = e.currentTarget;
+          setSending(true);
+          try {
+            await sendContactMessage(
+              { name: String(fd.get("name") ?? ""), email: String(fd.get("email") ?? ""), message: String(fd.get("message") ?? "") },
+              "creator",
+            );
+            form.reset();
+            toast.success("Thanks — I'll be in touch soon.");
+          } catch (err: unknown) {
+            toast.error(err instanceof z.ZodError ? (err.issues[0]?.message ?? "Invalid input") : "Could not send. Please try again.");
+          } finally {
+            setSending(false);
+          }
+        }}
         className="mx-auto grid max-w-2xl gap-4 px-6"
       >
         <input required name="name" placeholder="Your name" className="rounded-md border border-border bg-card px-4 py-3 font-body text-sm focus:border-accent focus:outline-none" />
         <input required type="email" name="email" placeholder="Email" className="rounded-md border border-border bg-card px-4 py-3 font-body text-sm focus:border-accent focus:outline-none" />
         <textarea required name="message" placeholder="What are you working on?" rows={5} className="rounded-md border border-border bg-card px-4 py-3 font-body text-sm focus:border-accent focus:outline-none" />
-        <button type="submit" className="rounded-md bg-accent px-6 py-3 font-heading text-base text-accent-foreground transition hover:opacity-90">Send message</button>
+        <button type="submit" disabled={sending} className="rounded-md bg-accent px-6 py-3 font-heading text-base text-accent-foreground transition hover:opacity-90 disabled:opacity-60">{sending ? "Sending…" : "Send message"}</button>
       </form>
     </section>
   );

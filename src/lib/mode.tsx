@@ -47,11 +47,11 @@ export function ModeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const toggle = useCallback(() => {
-    const dur = reducedMotion ? 220 : 850;
+    const dur = reducedMotion ? 260 : 2000;
     setTransitioning(true);
     // swap mode near the mid-point so the reveal shows the new theme
     if (timerRef.current) window.clearTimeout(timerRef.current);
-    const half = reducedMotion ? 100 : 380;
+    const half = reducedMotion ? 120 : 900;
     window.setTimeout(() => {
       setModeState((prev) => {
         const next = prev === "creator" ? "developer" : "creator";

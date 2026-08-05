@@ -2,6 +2,9 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import type { Section, SectionItem, Testimonial } from "@/lib/portfolio";
 import { itemsFor } from "@/lib/portfolio";
+import { sendContactMessage } from "@/lib/contact";
+import { toast } from "sonner";
+import { z } from "zod";
 
 export function CreatorHero({ title, subtitle, media }: { title: string; subtitle: string | null; media: string | null }) {
   return (
@@ -220,7 +223,7 @@ function Contact({ section }: { section: Section }) {
             );
             form.reset();
             toast.success("Thanks — I'll be in touch soon.");
-          } catch (err) {
+          } catch (err: unknown) {
             toast.error(err instanceof z.ZodError ? (err.issues[0]?.message ?? "Invalid input") : "Could not send. Please try again.");
           } finally {
             setSending(false);

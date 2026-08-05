@@ -51,7 +51,7 @@ function SiteContent() {
 function SiteFooter() {
   return (
     <footer className="border-t border-border py-8 text-center font-body text-xs text-muted-foreground">
-      <p>© {new Date().getFullYear()} Alex Rivers · <a href="/auth" className="underline-offset-4 hover:underline">admin</a></p>
+      <p>© {new Date().getFullYear()} Alex Rivers</p>
     </footer>
   );
 }

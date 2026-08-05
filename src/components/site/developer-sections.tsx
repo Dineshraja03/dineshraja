@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import type { Section, SectionItem } from "@/lib/portfolio";
 import { itemsFor } from "@/lib/portfolio";
+import { sendContactMessage } from "@/lib/contact";
+import { toast } from "sonner";
 
 export function DeveloperHero({ title, subtitle }: { title: string; subtitle: string | null }) {
   const lines = [
@@ -152,28 +154,45 @@ function Stack({ section, items }: { section: Section; items: SectionItem[] }) {
 function Contact({ section }: { section: Section }) {
   const [log, setLog] = useState<string[]>([]);
   const [input, setInput] = useState("");
+  const [step, setStep] = useState<"name" | "email" | "message">("name");
+  const [draft, setDraft] = useState({ name: "", email: "", message: "" });
+  const prompts = { name: "your name?", email: "your email?", message: "your message?" } as const;
   return (
     <section className="py-16 md:py-24">
       <Header section={section} />
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
-          if (!input.trim()) return;
-          setLog((l) => [...l, `$ ${input}`, "→ message queued. I'll reply within 48h."]);
+          const value = input.trim();
+          if (!value) return;
+          setLog((l) => [...l, `$ ${value}`]);
           setInput("");
+          if (step === "name") { setDraft((d) => ({ ...d, name: value })); setStep("email"); return; }
+          if (step === "email") { setDraft((d) => ({ ...d, email: value })); setStep("message"); return; }
+          const payload = { ...draft, message: value };
+          try {
+            await sendContactMessage(payload, "developer");
+            setLog((l) => [...l, "→ message sent. I'll reply within 48h."]);
+            setDraft({ name: "", email: "", message: "" });
+            setStep("name");
+            toast.success("Message sent");
+          } catch {
+            setLog((l) => [...l, "→ error: could not send. check your details and retry."]);
+            setStep("name");
+          }
         }}
         className="mx-auto max-w-3xl px-6"
       >
         <div className="rounded-md border border-border bg-card p-5 font-mono-token text-sm">
-          <div className="text-muted-foreground">// type a message and hit enter</div>
+          <div className="text-muted-foreground">// answer each prompt and hit enter</div>
           {log.map((l, i) => <div key={i} className={l.startsWith("→") ? "text-accent" : "text-foreground"}>{l}</div>)}
           <div className="mt-2 flex items-center gap-2">
-            <span className="text-accent">alex@dev:~$</span>
+            <span className="text-accent">alex@dev:~ {prompts[step]}</span>
             <input
               autoFocus={false} value={input} onChange={(e) => setInput(e.target.value)}
-              aria-label="Message input"
+              aria-label={prompts[step]}
               className="flex-1 bg-transparent font-mono-token text-foreground outline-none placeholder:text-muted-foreground"
-              placeholder="hello, want to build..."
+              placeholder={step === "message" ? "hello, want to build..." : ""}
             />
           </div>
         </div>

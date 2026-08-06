@@ -5,12 +5,13 @@ import { itemsFor } from "@/lib/portfolio";
 import { sendContactMessage } from "@/lib/contact";
 import { toast } from "sonner";
 import { z } from "zod";
+import { MediaImg } from "@/lib/media";
 
 export function CreatorHero({ title, subtitle, media }: { title: string; subtitle: string | null; media: string | null }) {
   return (
     <section className="relative isolate flex min-h-[92vh] w-full items-end overflow-hidden">
       {media && (
-        <img src={media} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover animate-develop" />
+        <MediaImg src={media} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover animate-develop" />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
       <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-16 md:pb-24">
@@ -62,7 +63,7 @@ function Photography({ section, items }: { section: Section; items: SectionItem[
             transition={{ duration: 0.5, delay: (i % 3) * 0.05 }}
             className="mb-4 break-inside-avoid overflow-hidden rounded-md bg-muted"
           >
-            {it.media_url && <img src={it.media_url} alt={it.alt_text ?? it.title} className="h-auto w-full object-cover" loading="lazy" />}
+            {it.media_url && <MediaImg src={it.media_url} alt={it.alt_text ?? it.title} className="h-auto w-full object-cover" loading="lazy" />}
             <figcaption className="flex items-baseline justify-between px-3 py-2 text-xs text-muted-foreground">
               <span className="font-heading text-sm text-foreground">{it.title}</span>
               {it.subtitle && <span>{it.subtitle}</span>}
@@ -87,7 +88,7 @@ function Videography({ section, items }: { section: Section; items: SectionItem[
             transition={{ duration: 0.5, delay: i * 0.05 }}
             className={`group relative block overflow-hidden rounded-lg ${i === 0 ? "md:col-span-2" : ""}`}
           >
-            {it.media_url && <img src={it.media_url} alt={it.alt_text ?? it.title} className="aspect-[16/9] w-full object-cover transition duration-700 group-hover:scale-105" loading="lazy" />}
+            {it.media_url && <MediaImg src={it.media_url} alt={it.alt_text ?? it.title} className="aspect-[16/9] w-full object-cover transition duration-700 group-hover:scale-105" loading="lazy" />}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
             <div className="absolute inset-0 flex flex-col justify-end p-5 text-white">
               <div className="flex items-center gap-2 text-xs font-body opacity-90">▶ {it.subtitle}</div>
@@ -105,10 +106,10 @@ function BeforeAfter({ it }: { it: SectionItem }) {
   return (
     <figure className="relative overflow-hidden rounded-lg border border-border">
       <div className="relative aspect-[16/9]">
-        {it.media_url_secondary && <img src={it.media_url_secondary} alt={`${it.alt_text ?? it.title} — after`} className="absolute inset-0 h-full w-full object-cover" />}
+        {it.media_url_secondary && <MediaImg src={it.media_url_secondary} alt={`${it.alt_text ?? it.title} — after`} className="absolute inset-0 h-full w-full object-cover" />}
         {it.media_url && (
           <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-            <img src={it.media_url} alt={`${it.alt_text ?? it.title} — before`} className="h-full w-full object-cover" />
+            <MediaImg src={it.media_url} alt={`${it.alt_text ?? it.title} — before`} className="h-full w-full object-cover" />
           </div>
         )}
         <div className="absolute inset-y-0 w-0.5 bg-white/90 shadow" style={{ left: `${pos}%` }} aria-hidden />
@@ -152,7 +153,7 @@ function Design({ section, items }: { section: Section; items: SectionItem[] }) 
             initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.05 }}
             className="group block overflow-hidden rounded-lg border border-border bg-card transition hover:border-accent"
           >
-            {it.media_url && <img src={it.media_url} alt={it.alt_text ?? it.title} className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" />}
+            {it.media_url && <MediaImg src={it.media_url} alt={it.alt_text ?? it.title} className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" />}
             <div className="p-5">
               <div className="text-xs uppercase tracking-widest text-accent">{it.subtitle}</div>
               <h3 className="mt-1 font-heading text-xl">{it.title}</h3>
@@ -172,7 +173,7 @@ function About({ section, items }: { section: Section; items: SectionItem[] }) {
       <SectionHeader section={section} />
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 md:grid-cols-[1fr_1.3fr]">
         {it?.media_url && (
-          <img src={it.media_url} alt={it.alt_text ?? ""} className="aspect-[4/5] w-full rounded-lg object-cover" loading="lazy" />
+          <MediaImg src={it.media_url} alt={it.alt_text ?? ""} className="aspect-[4/5] w-full rounded-lg object-cover" loading="lazy" />
         )}
         <div>
           <h3 className="font-heading text-3xl md:text-4xl">{it?.title}</h3>
@@ -192,7 +193,7 @@ function Testimonials({ section, testimonials }: { section: Section; testimonial
           <figure key={t.id} className="rounded-lg border border-border bg-card p-6">
             <blockquote className="font-heading text-lg leading-snug">“{t.quote}”</blockquote>
             <figcaption className="mt-4 flex items-center gap-3">
-              {t.avatar_url && <img src={t.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />}
+              {t.avatar_url && <MediaImg src={t.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />}
               <div>
                 <div className="font-body text-sm font-medium">{t.client_name}</div>
                 {t.client_title && <div className="text-xs text-muted-foreground">{t.client_title}</div>}

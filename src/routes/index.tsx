@@ -51,7 +51,7 @@ function SiteContent() {
 function SiteFooter() {
   return (
     <footer className="border-t border-border py-8 text-center font-body text-xs text-muted-foreground">
-      <p>© {new Date().getFullYear()} Alex Rivers</p>
+      <p>© {new Date().getFullYear()} Dinesh Raja</p>
     </footer>
   );
 }

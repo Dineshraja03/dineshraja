@@ -1,3 +1,4 @@
+import { MediaImg } from "@/lib/media";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -54,7 +55,7 @@ function TestimonialsPage() {
       <ul className="mt-6 space-y-2">
         {data.map((t) => (
           <li key={t.id} className="flex items-center gap-3 rounded-md border border-border bg-card p-3">
-            {t.avatar_url ? <img src={t.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" /> : <div className="h-10 w-10 rounded-full bg-muted" />}
+            {t.avatar_url ? <MediaImg src={t.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" /> : <div className="h-10 w-10 rounded-full bg-muted" />}
             <button onClick={() => setEditing(t)} className="flex-1 text-left">
               <div className="text-sm font-medium">{t.client_name} <span className="text-xs text-muted-foreground">{t.client_title}</span></div>
               <div className="text-xs text-muted-foreground line-clamp-1">“{t.quote}”</div>

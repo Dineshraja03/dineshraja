@@ -187,7 +187,7 @@ function Contact({ section }: { section: Section }) {
           <div className="text-muted-foreground">// answer each prompt and hit enter</div>
           {log.map((l, i) => <div key={i} className={l.startsWith("→") ? "text-accent" : "text-foreground"}>{l}</div>)}
           <div className="mt-2 flex items-center gap-2">
-            <span className="text-accent">alex@dev:~ {prompts[step]}</span>
+            <span className="text-accent">dinesh@dev:~ {prompts[step]}</span>
             <input
               autoFocus={false} value={input} onChange={(e) => setInput(e.target.value)}
               aria-label={prompts[step]}

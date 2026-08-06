@@ -6,7 +6,7 @@ import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from 
 import type { DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Eye, EyeOff, Trash2, Plus } from "lucide-react";
+import { GripVertical, Eye, EyeOff, Trash2, Plus, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/sections")({
@@ -52,6 +52,15 @@ function SectionsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "sections"] }),
   });
 
+  const update = useMutation({
+    mutationFn: async (row: { id: string; title: string; subtitle: string | null }) => {
+      const { error } = await supabase.from("sections").update({ title: row.title, subtitle: row.subtitle }).eq("id", row.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin", "sections"] }); toast.success("Section updated"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const create = useMutation({
     mutationFn: async (payload: { key: string; title: string }) => {
       const nextOrder = (data[data.length - 1]?.order_index ?? -1) + 1;
@@ -87,6 +96,7 @@ function SectionsPage() {
             {data.map((row) => (
               <SortableRow key={row.id} row={row}
                 onToggle={() => toggle.mutate(row)}
+                onSave={(v) => update.mutate({ id: row.id, ...v })}
                 onDelete={() => { if (confirm("Delete section and all its items?")) del.mutate(row.id); }}
               />
             ))}
@@ -133,16 +143,41 @@ function NewSectionForm({ onSubmit }: { onSubmit: (v: { key: string; title: stri
   );
 }
 
-function SortableRow({ row, onToggle, onDelete }: { row: Row; onToggle: () => void; onDelete: () => void }) {
+function SortableRow({ row, onToggle, onDelete, onSave }: { row: Row; onToggle: () => void; onDelete: () => void; onSave: (v: { title: string; subtitle: string | null }) => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.id });
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(row.title);
+  const [subtitle, setSubtitle] = useState(row.subtitle ?? "");
   return (
     <li ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.7 : 1 }}
-      className="flex items-center gap-3 rounded-md border border-border bg-card p-3">
+      className="flex flex-wrap items-center gap-3 rounded-md border border-border bg-card p-3">
       <button {...attributes} {...listeners} className="cursor-grab text-muted-foreground" aria-label="Drag handle"><GripVertical className="h-4 w-4" /></button>
-      <div className="flex-1">
-        <div className="text-sm font-medium">{row.title}</div>
-        <div className="text-xs text-muted-foreground">{row.key} · order {row.order_index}</div>
-      </div>
+      {editing ? (
+        <div className="flex min-w-[200px] flex-1 flex-col gap-2">
+          <input value={title} onChange={(e) => setTitle(e.target.value)} aria-label="Section title"
+            className="rounded-md border border-border bg-background px-3 py-2 text-sm" placeholder="Title" />
+          <input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} aria-label="Section subtitle"
+            className="rounded-md border border-border bg-background px-3 py-2 text-sm" placeholder="Subtitle" />
+        </div>
+      ) : (
+        <div className="flex-1">
+          <div className="text-sm font-medium">{row.title}</div>
+          {row.subtitle && <div className="text-xs text-foreground/70">{row.subtitle}</div>}
+          <div className="text-xs text-muted-foreground">{row.key} · order {row.order_index}</div>
+        </div>
+      )}
+      {editing ? (
+        <>
+          <button onClick={() => { onSave({ title: title.trim() || row.title, subtitle: subtitle.trim() || null }); setEditing(false); }}
+            className="text-accent hover:opacity-80" aria-label="Save section"><Check className="h-4 w-4" /></button>
+          <button onClick={() => { setTitle(row.title); setSubtitle(row.subtitle ?? ""); setEditing(false); }}
+            className="text-muted-foreground hover:text-foreground" aria-label="Cancel edit"><X className="h-4 w-4" /></button>
+        </>
+      ) : (
+        <button onClick={() => setEditing(true)} className="text-muted-foreground hover:text-foreground" aria-label="Edit section">
+          <Pencil className="h-4 w-4" />
+        </button>
+      )}
       <button onClick={onToggle} className="text-muted-foreground hover:text-foreground" aria-label="Toggle visibility">
         {row.is_visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
       </button>

@@ -80,15 +80,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Alex Rivers — Creative Technologist" },
-      { name: "description", content: "Portfolio of Alex Rivers — photographer, filmmaker, and developer. Toggle between creative and developer modes." },
-      { property: "og:title", content: "Alex Rivers — Creative Technologist" },
+      { title: "Dinesh Raja — Creative Technologist" },
+      { name: "description", content: "Portfolio of Dinesh Raja — photographer, filmmaker, and developer. Toggle between creative and developer modes." },
+      { property: "og:title", content: "Dinesh Raja — Creative Technologist" },
       { property: "og:description", content: "Photography, film, design, and code — one dual-mode portfolio." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#0d0d0f" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-title", content: "Alex Rivers" },
+      { name: "apple-mobile-web-app-title", content: "Dinesh Raja" },
     ],
     links: [
       {

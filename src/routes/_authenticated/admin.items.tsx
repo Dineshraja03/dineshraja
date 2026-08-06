@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { MediaImg } from "@/lib/media";
 import { Eye, EyeOff, Plus, Trash2, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/items")({
@@ -83,7 +84,7 @@ function ItemsPage() {
       <ul className="mt-4 space-y-2">
         {items.map((it) => (
           <li key={it.id} className="flex items-center gap-3 rounded-md border border-border bg-card p-3">
-            {it.media_url ? <img src={it.media_url} alt="" className="h-12 w-16 rounded object-cover" /> : <div className="h-12 w-16 rounded bg-muted" />}
+            {it.media_url ? <MediaImg src={it.media_url} alt="" className="h-12 w-16 rounded object-cover" /> : <div className="h-12 w-16 rounded bg-muted" />}
             <button onClick={() => setEditing(it)} className="flex-1 text-left">
               <div className="text-sm font-medium">{it.title}</div>
               <div className="text-xs text-muted-foreground line-clamp-1">{it.subtitle ?? it.body ?? ""}</div>

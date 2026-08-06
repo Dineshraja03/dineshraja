@@ -6,7 +6,7 @@ import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from 
 import type { DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Eye, EyeOff, Trash2, Plus } from "lucide-react";
+import { GripVertical, Eye, EyeOff, Trash2, Plus, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/sections")({
@@ -52,6 +52,15 @@ function SectionsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "sections"] }),
   });
 
+  const update = useMutation({
+    mutationFn: async (row: { id: string; title: string; subtitle: string | null }) => {
+      const { error } = await supabase.from("sections").update({ title: row.title, subtitle: row.subtitle }).eq("id", row.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin", "sections"] }); toast.success("Section updated"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const create = useMutation({
     mutationFn: async (payload: { key: string; title: string }) => {
       const nextOrder = (data[data.length - 1]?.order_index ?? -1) + 1;
@@ -87,6 +96,7 @@ function SectionsPage() {
             {data.map((row) => (
               <SortableRow key={row.id} row={row}
                 onToggle={() => toggle.mutate(row)}
+                onSave={(v) => update.mutate({ id: row.id, ...v })}
                 onDelete={() => { if (confirm("Delete section and all its items?")) del.mutate(row.id); }}
               />
             ))}

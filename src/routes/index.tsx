@@ -5,6 +5,7 @@ import { useMode } from "@/lib/mode";
 import { portfolioQuery } from "@/lib/portfolio";
 import { ModeSwitch } from "@/components/site/mode-switch";
 import { ModeTransition } from "@/components/site/mode-transition";
+import { SiteLogo } from "@/components/site/site-logo";
 import { CreatorHero, CreatorSectionRenderer } from "@/components/site/creator-sections";
 import { DeveloperHero, DeveloperSectionRenderer } from "@/components/site/developer-sections";
 

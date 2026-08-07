@@ -17,6 +17,7 @@ function Index() {
   return (
     <>
       <div className="texture-overlay" aria-hidden />
+      <SiteLogo />
       <ModeSwitch />
       <ModeTransition />
       <Suspense fallback={<div className="min-h-screen bg-background" />}>

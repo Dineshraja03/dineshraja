@@ -132,14 +132,17 @@ bun run dev
 
 The app runs at `http://localhost:3000`.
 
-## Deploy to Vercel
+## Deploy to Cloudflare
 
-This app uses [Nitro](https://nitro.build/) (via `nitro()` in `vite.config.ts`) so Vercel can serve SSR and server functions.
+This app uses the official [`@cloudflare/vite-plugin`](https://developers.cloudflare.com/workers/framework-guides/web-apps/tanstack-start/) for SSR on Cloudflare Workers/Pages.
 
-1. Import the repo at [vercel.com/new](https://vercel.com/new)
-2. Set **Framework Preset** to **TanStack Start** (if not auto-detected)
-3. Leave **Output Directory** empty — Vercel uses `.output` from the Nitro build
-4. Add all env vars from `.env.example` in Vercel project settings
+1. Connect the repo in [Cloudflare Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/) or run `bun run deploy` locally
+2. Build command: `bun run build`
+3. Add env vars in Cloudflare dashboard (Settings → Variables):
+   - **Build-time:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`
+   - **Runtime:** `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CLOUDINARY_*`
+
+Lockfile: commit `bun.lock` after dependency changes — Cloudflare runs `bun install --frozen-lockfile`.
 
 
 1. Create a Supabase project and copy credentials into `.env` (see `.env.example`).

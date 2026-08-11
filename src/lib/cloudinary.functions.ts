@@ -5,6 +5,7 @@ function parseCloudinaryUrl(raw: string) {
   // cloudinary://<api_key>:<api_secret>@<cloud_name>
   const m = raw.match(/^cloudinary:\/\/([^:]+):([^@]+)@(.+)$/);
   if (!m) throw new Error("CLOUDINARY_URL is malformed");
+  if (/[<>]/.test(raw)) throw new Error("CLOUDINARY_URL still contains placeholder values");
   return { apiKey: m[1], apiSecret: m[2], cloudName: m[3].replace(/\/.*$/, "") };
 }
 

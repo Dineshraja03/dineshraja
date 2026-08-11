@@ -6,10 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadMediaFile } from "@/lib/upload-media";
 import { toast } from "sonner";
 import { Eye, EyeOff, Plus, Trash2, Upload } from "lucide-react";
-<<<<<<< HEAD
-=======
-import { uploadToCloudinary } from "@/lib/cloudinary";
->>>>>>> 2dd08e7993a483aad123892c26427bb688345a7f
 
 export const Route = createFileRoute("/_authenticated/admin/testimonials")({
   component: TestimonialsPage,
@@ -63,7 +59,7 @@ function TestimonialsPage() {
             {t.avatar_url ? <MediaImg src={t.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" /> : <div className="h-10 w-10 rounded-full bg-muted" />}
             <button onClick={() => setEditing(t)} className="flex-1 text-left">
               <div className="text-sm font-medium">{t.client_name} <span className="text-xs text-muted-foreground">{t.client_title}</span></div>
-              <div className="text-xs text-muted-foreground line-clamp-1">“{t.quote}”</div>
+              <div className="text-xs text-muted-foreground line-clamp-1">"{t.quote}"</div>
             </button>
             <button onClick={() => toggle.mutate(t)} className="text-muted-foreground hover:text-foreground">{t.is_visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}</button>
             <button onClick={() => { if (confirm("Delete?")) del.mutate(t.id); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
@@ -78,23 +74,6 @@ function TestimonialsPage() {
 function Editor({ t, onSave, onClose }: { t: T; onSave: (v: Partial<T> & { id?: string }) => void; onClose: () => void }) {
   const [v, setV] = useState(t);
   const [uploading, setUploading] = useState(false);
-<<<<<<< HEAD
-=======
-
-  async function upload(file: File) {
-    setUploading(true);
-    try {
-      const url = await uploadToCloudinary(file, "portfolio/testimonials");
-      setV((prev) => ({ ...prev, avatar_url: url }));
-      toast.success("Uploaded");
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Upload failed");
-    } finally {
-      setUploading(false);
-    }
-  }
-
->>>>>>> 2dd08e7993a483aad123892c26427bb688345a7f
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); const payload: Partial<T> & { id?: string } = { ...v }; if (!payload.id) delete payload.id; onSave(payload); }}
@@ -104,7 +83,6 @@ function Editor({ t, onSave, onClose }: { t: T; onSave: (v: Partial<T> & { id?: 
           <label className="text-xs text-muted-foreground">Client name<input required value={v.client_name} onChange={(e) => setV({ ...v, client_name: e.target.value })} className={inputCls} /></label>
           <label className="text-xs text-muted-foreground">Client title<input value={v.client_title ?? ""} onChange={(e) => setV({ ...v, client_title: e.target.value || null })} className={inputCls} /></label>
           <label className="text-xs text-muted-foreground">Quote<textarea required rows={4} value={v.quote} onChange={(e) => setV({ ...v, quote: e.target.value })} className={inputCls} /></label>
-<<<<<<< HEAD
           <label className="text-xs text-muted-foreground">Avatar URL
             <div className="mt-1 flex items-center gap-2">
               <input value={v.avatar_url ?? ""} onChange={(e) => setV({ ...v, avatar_url: e.target.value || null })} className={inputCls} placeholder="https://... or upload" />
@@ -125,14 +103,6 @@ function Editor({ t, onSave, onClose }: { t: T; onSave: (v: Partial<T> & { id?: 
                     e.target.value = "";
                   }
                 }} />
-=======
-          <label className="text-xs text-muted-foreground">Avatar
-            <div className="mt-1 flex items-center gap-2">
-              <input value={v.avatar_url ?? ""} onChange={(e) => setV({ ...v, avatar_url: e.target.value || null })} className="block w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent" placeholder="https://... or upload" />
-              <label className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-border bg-background px-3 py-2 text-xs">
-                <Upload className="h-3.5 w-3.5" /> {uploading ? "…" : "Upload"}
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && upload(e.target.files[0])} />
->>>>>>> 2dd08e7993a483aad123892c26427bb688345a7f
               </label>
             </div>
           </label>

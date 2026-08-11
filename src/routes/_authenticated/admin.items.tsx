@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadMediaFile } from "@/lib/upload-media";
 import { toast } from "sonner";
 import { MediaImg } from "@/lib/media";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 import { Eye, EyeOff, Plus, Trash2, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/items")({
@@ -112,9 +113,15 @@ function ItemEditor({ item, onSave, onClose }: { item: Item; onSave: (v: Partial
   async function upload(file: File, target: "primary" | "secondary") {
     setUploading(target);
     try {
+<<<<<<< HEAD
       const url = await uploadMediaFile(file);
       setValues((v) => target === "primary" ? { ...v, media_url: url } : { ...v, media_url_secondary: url });
       toast.success("Uploaded to Cloudinary");
+=======
+      const url = await uploadToCloudinary(file, "portfolio/items");
+      setValues((v) => target === "primary" ? { ...v, media_url: url } : { ...v, media_url_secondary: url });
+      toast.success("Uploaded");
+>>>>>>> 2dd08e7993a483aad123892c26427bb688345a7f
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally { setUploading(null); }

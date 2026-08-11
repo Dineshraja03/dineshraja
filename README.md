@@ -132,7 +132,15 @@ bun run dev
 
 The app runs at `http://localhost:3000`.
 
-## Supabase setup
+## Deploy to Vercel
+
+This app uses [Nitro](https://nitro.build/) (via `nitro()` in `vite.config.ts`) so Vercel can serve SSR and server functions.
+
+1. Import the repo at [vercel.com/new](https://vercel.com/new)
+2. Set **Framework Preset** to **TanStack Start** (if not auto-detected)
+3. Leave **Output Directory** empty — Vercel uses `.output` from the Nitro build
+4. Add all env vars from `.env.example` in Vercel project settings
+
 
 1. Create a Supabase project and copy credentials into `.env` (see `.env.example`).
 2. Run migrations: `supabase db push` or apply SQL files in `supabase/migrations/` via the Supabase SQL editor.

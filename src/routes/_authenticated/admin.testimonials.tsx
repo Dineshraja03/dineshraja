@@ -3,8 +3,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadMediaFile } from "@/lib/upload-media";
 import { toast } from "sonner";
-import { Eye, EyeOff, Plus, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Plus, Trash2, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/testimonials")({
   component: TestimonialsPage,
@@ -72,6 +73,7 @@ function TestimonialsPage() {
 
 function Editor({ t, onSave, onClose }: { t: T; onSave: (v: Partial<T> & { id?: string }) => void; onClose: () => void }) {
   const [v, setV] = useState(t);
+  const [uploading, setUploading] = useState(false);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); const payload: Partial<T> & { id?: string } = { ...v }; if (!payload.id) delete payload.id; onSave(payload); }}
@@ -81,7 +83,29 @@ function Editor({ t, onSave, onClose }: { t: T; onSave: (v: Partial<T> & { id?: 
           <label className="text-xs text-muted-foreground">Client name<input required value={v.client_name} onChange={(e) => setV({ ...v, client_name: e.target.value })} className={inputCls} /></label>
           <label className="text-xs text-muted-foreground">Client title<input value={v.client_title ?? ""} onChange={(e) => setV({ ...v, client_title: e.target.value || null })} className={inputCls} /></label>
           <label className="text-xs text-muted-foreground">Quote<textarea required rows={4} value={v.quote} onChange={(e) => setV({ ...v, quote: e.target.value })} className={inputCls} /></label>
-          <label className="text-xs text-muted-foreground">Avatar URL<input value={v.avatar_url ?? ""} onChange={(e) => setV({ ...v, avatar_url: e.target.value || null })} className={inputCls} /></label>
+          <label className="text-xs text-muted-foreground">Avatar URL
+            <div className="mt-1 flex items-center gap-2">
+              <input value={v.avatar_url ?? ""} onChange={(e) => setV({ ...v, avatar_url: e.target.value || null })} className={inputCls} placeholder="https://... or upload" />
+              <label className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-md border border-border bg-background px-3 py-2 text-xs">
+                <Upload className="h-3.5 w-3.5" /> {uploading ? "…" : "Upload"}
+                <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setUploading(true);
+                  try {
+                    const url = await uploadMediaFile(file);
+                    setV((prev) => ({ ...prev, avatar_url: url }));
+                    toast.success("Uploaded to Cloudinary");
+                  } catch (err: unknown) {
+                    toast.error(err instanceof Error ? err.message : "Upload failed");
+                  } finally {
+                    setUploading(false);
+                    e.target.value = "";
+                  }
+                }} />
+              </label>
+            </div>
+          </label>
           <label className="text-xs text-muted-foreground">Order<input type="number" value={v.order_index} onChange={(e) => setV({ ...v, order_index: Number(e.target.value) })} className={inputCls} /></label>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={v.is_visible} onChange={(e) => setV({ ...v, is_visible: e.target.checked })} /> Visible</label>
         </div>

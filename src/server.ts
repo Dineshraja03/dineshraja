@@ -28,7 +28,13 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   const body = await response.clone().text();
   if (!isH3SwallowedErrorBody(body)) return response;
 
-  console.error(consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
+  const captured = consumeLastCapturedError();
+  // Dev SSR/HMR often aborts in-flight requests when the browser reconnects — not a real app error.
+  if (isBenignAbort(captured) || (import.meta.env.DEV && !captured)) {
+    return new Response(null, { status: 204 });
+  }
+
+  console.error(captured ?? new Error(`h3 swallowed SSR error: ${body}`));
   return new Response(renderErrorPage(), {
     status: 500,
     headers: { "content-type": "text/html; charset=utf-8" },
@@ -44,6 +50,14 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+function isBenignAbort(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const e = error as { code?: string; message?: string; cause?: unknown };
+  if (e.code === "ECONNRESET" || e.message === "aborted") return true;
+  if (e.cause) return isBenignAbort(e.cause);
+  return false;
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
@@ -51,7 +65,8 @@ export default {
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
     } catch (error) {
-      console.error(error);
+      if (!isBenignAbort(error)) console.error(error);
+      if (isBenignAbort(error)) return new Response(null, { status: 204 });
       return new Response(renderErrorPage(), {
         status: 500,
         headers: { "content-type": "text/html; charset=utf-8" },

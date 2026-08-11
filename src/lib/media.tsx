@@ -4,14 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 const BUCKET = "media";
 const cache = new Map<string, string>();
 
-/** Extracts the storage object path from any Supabase storage URL for the media bucket. */
+function isCloudinaryUrl(url: string): boolean {
+  return url.includes("res.cloudinary.com/");
+}
+
+/** Extracts the storage object path from legacy Supabase storage URLs. */
 export function storagePath(url: string | null | undefined): string | null {
-  if (!url) return null;
+  if (!url || isCloudinaryUrl(url)) return null;
   const m = url.match(/\/storage\/v1\/object\/(?:public\/|sign\/|authenticated\/)?media\/([^?]+)/);
   return m ? decodeURIComponent(m[1]) : null;
 }
 
-/** Resolves stored media URLs to a working URL (signed URL for private bucket objects). */
+/** Resolves stored media URLs (Cloudinary URLs pass through; legacy Supabase paths get signed URLs). */
 export function useMediaUrl(url: string | null | undefined): string | null {
   const path = storagePath(url);
   const [resolved, setResolved] = useState<string | null>(() =>

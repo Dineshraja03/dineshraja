@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadMediaFile } from "@/lib/upload-media";
 import { toast } from "sonner";
 import { MediaImg } from "@/lib/media";
 import { Eye, EyeOff, Plus, Trash2, Upload } from "lucide-react";
@@ -111,12 +112,9 @@ function ItemEditor({ item, onSave, onClose }: { item: Item; onSave: (v: Partial
   async function upload(file: File, target: "primary" | "secondary") {
     setUploading(target);
     try {
-      const path = `${crypto.randomUUID()}-${file.name.replace(/[^a-z0-9.-]/gi, "_")}`;
-      const { error } = await supabase.storage.from("media").upload(path, file, { cacheControl: "3600", upsert: false });
-      if (error) throw error;
-      const { data } = supabase.storage.from("media").getPublicUrl(path);
-      setValues((v) => target === "primary" ? { ...v, media_url: data.publicUrl } : { ...v, media_url_secondary: data.publicUrl });
-      toast.success("Uploaded");
+      const url = await uploadMediaFile(file);
+      setValues((v) => target === "primary" ? { ...v, media_url: url } : { ...v, media_url_secondary: url });
+      toast.success("Uploaded to Cloudinary");
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally { setUploading(null); }

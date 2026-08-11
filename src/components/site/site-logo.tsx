@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import logoAsset from "@/assets/logo.png.asset.json";
 
 export function SiteLogo() {
   return (
@@ -9,7 +8,7 @@ export function SiteLogo() {
       aria-label="Dinesh Raja — home"
     >
       <img
-        src={logoAsset.url}
+        src="/logo.svg"
         alt="Dinesh Raja"
         className="h-full w-full object-cover"
         loading="eager"

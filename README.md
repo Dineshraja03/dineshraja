@@ -112,29 +112,34 @@ TECH
 
 - React + Tailwind + Framer Motion for animations
 
-- Supabase for auth, database, and storage
+- Supabase for auth and database; Cloudinary for media storage
 
 - Fully responsive, accessible (proper alt text, keyboard-navigable toggle, reduced-motion support)
 
 - SEO meta fields editable per mode from admin panel
 
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/c0d3ad00-4a69-4aba-ac37-5af374438fca).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Requires [Bun](https://bun.sh) or Node.js 20+.
 
 ```sh
 git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+cd dineshraja
+cp .env.example .env   # fill in your Supabase credentials
+bun install
+bun run dev
 ```
+
+The app runs at `http://localhost:3000`.
+
+## Supabase setup
+
+1. Create a Supabase project and copy credentials into `.env` (see `.env.example`).
+2. Run migrations: `supabase db push` or apply SQL files in `supabase/migrations/` via the Supabase SQL editor.
+3. Add Cloudinary credentials to `.env` (server-only; used for admin uploads).
+4. Sign up via `/auth`, then grant admin access:
+
+```sql
+INSERT INTO user_roles (user_id, role) VALUES ('<your-auth-user-uuid>', 'admin');
+```
+

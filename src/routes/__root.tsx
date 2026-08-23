@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import "../assets/fonts/fonts.css";
 import { ModeProvider } from "../lib/mode";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
@@ -77,10 +78,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Dinesh Raja — Creative Technologist" },
-      { name: "description", content: "Portfolio of Dinesh Raja — photographer, filmmaker, and developer. Toggle between creative and developer modes." },
+      {
+        name: "description",
+        content:
+          "Portfolio of Dinesh Raja — photographer, filmmaker, and developer. Toggle between creative and developer modes.",
+      },
       { property: "og:title", content: "Dinesh Raja — Creative Technologist" },
-      { property: "og:description", content: "Photography, film, design, and code — one dual-mode portfolio." },
+      {
+        property: "og:description",
+        content: "Photography, film, design, and code — one dual-mode portfolio.",
+      },
       { property: "og:type", content: "website" },
+      ...(import.meta.env.VITE_SITE_URL
+        ? [{ property: "og:url", content: import.meta.env.VITE_SITE_URL }]
+        : []),
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#0d0d0f" },
       { name: "mobile-web-app-capable", content: "yes" },
@@ -95,9 +106,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "apple-touch-icon", href: "/logo.svg" },
       { rel: "manifest", href: "/manifest.webmanifest" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" },
+      { rel: "preconnect", href: "https://images.unsplash.com" },
+      { rel: "preconnect", href: "https://res.cloudinary.com" },
+      ...(import.meta.env.VITE_SUPABASE_URL
+        ? [{ rel: "preconnect", href: import.meta.env.VITE_SUPABASE_URL }]
+        : []),
+      ...(import.meta.env.VITE_SITE_URL
+        ? [{ rel: "canonical", href: import.meta.env.VITE_SITE_URL }]
+        : []),
     ],
   }),
   shellComponent: RootShell,

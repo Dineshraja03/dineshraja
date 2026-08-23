@@ -139,7 +139,7 @@ This app uses the official [`@cloudflare/vite-plugin`](https://developers.cloudf
 1. Connect the repo in [Cloudflare Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/) or run `bun run deploy` locally
 2. Build command: `bun run build`
 3. Add env vars in Cloudflare dashboard (Settings → Variables):
-   - **Build-time:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`
+    - **Build-time:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SITE_URL` (public site URL for SEO tags/sitemap)
    - **Runtime:** `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CLOUDINARY_*`
 
 Lockfile: commit `bun.lock` after dependency changes — Cloudflare runs `bun install --frozen-lockfile`.

@@ -58,19 +58,64 @@ function isBenignAbort(error: unknown): boolean {
   return false;
 }
 
+function buildContentSecurityPolicy(): string {
+  const supabaseHost = (process.env.SUPABASE_URL ?? "")
+    .replace(/^https?:\/\//, "")
+    .replace(/\/.*$/, "");
+  const supabaseSources = supabaseHost
+    ? [`https://${supabaseHost}`, `wss://${supabaseHost}`]
+    : ["https://*.supabase.co", "wss://*.supabase.co"];
+
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    "script-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com",
+    "media-src 'self' blob: https://res.cloudinary.com",
+    "font-src 'self' data:",
+    "worker-src 'self' blob:",
+    `connect-src 'self' https://api.cloudinary.com ${supabaseSources.join(" ")}`,
+  ].join("; ");
+}
+
+function withSecurityHeaders(response: Response): Response {
+  const headers = new Headers(response.headers);
+  headers.set("content-security-policy", buildContentSecurityPolicy());
+  headers.set("referrer-policy", "strict-origin-when-cross-origin");
+  headers.set("x-content-type-options", "nosniff");
+  headers.set("x-frame-options", "DENY");
+  headers.set("cross-origin-resource-policy", "same-origin");
+  headers.set("x-permitted-cross-domain-policies", "none");
+  headers.set(
+    "permissions-policy",
+    "camera=(), display-capture=(), geolocation=(), microphone=(), payment=(), usb=()",
+  );
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      return withSecurityHeaders(await normalizeCatastrophicSsrResponse(response));
     } catch (error) {
       if (!isBenignAbort(error)) console.error(error);
       if (isBenignAbort(error)) return new Response(null, { status: 204 });
-      return new Response(renderErrorPage(), {
-        status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
+      return withSecurityHeaders(
+        new Response(renderErrorPage(), {
+          status: 500,
+          headers: { "content-type": "text/html; charset=utf-8" },
+        }),
+      );
     }
   },
 };

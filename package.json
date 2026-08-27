@@ -7,8 +7,10 @@
     "dev": "vite dev",
     "build": "node scripts/gen-seo.mjs && vite build",
     "build:dev": "vite build --mode development",
+    "build:pages": "node scripts/gen-seo.mjs && vite build && node scripts/reshape-pages.mjs",
     "preview": "vite preview",
     "deploy": "vite build && wrangler deploy",
+    "deploy:pages": "npm run build:pages && wrangler pages deploy dist",
     "cf-typegen": "wrangler types",
     "lint": "eslint .",
     "format": "prettier --write ."

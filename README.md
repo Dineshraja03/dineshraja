@@ -139,10 +139,21 @@ This app uses the official [`@cloudflare/vite-plugin`](https://developers.cloudf
 1. Connect the repo in [Cloudflare Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/) or run `bun run deploy` locally
 2. Build command: `bun run build`
 3. Add env vars in Cloudflare dashboard (Settings → Variables):
-    - **Build-time:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SITE_URL` (public site URL for SEO tags/sitemap)
+   - **Build-time:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SITE_URL` (public site URL for SEO tags/sitemap)
    - **Runtime:** `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CLOUDINARY_*`
 
 Lockfile: commit `bun.lock` after dependency changes — Cloudflare runs `bun install --frozen-lockfile`.
+
+### Cloudflare Pages
+
+The Vite build is Workers-shaped by default; `build:pages` reshapes `dist/` into a
+Cloudflare Pages layout (static assets at the root + a `_worker.js` SSR function).
+
+1. In the Pages project, set **Build command**: `bun run build:pages`
+2. Set **Build output directory**: `dist`
+3. Enable the **`nodejs_compat`** compatibility flag (Settings → Functions → Compatibility flags)
+4. Add the same env vars as above (build-time `VITE_*` and runtime `SUPABASE_*`/`CLOUDINARY_*`)
+5. For a one-off upload instead of Git: `bun run deploy:pages`
 
 
 1. Create a Supabase project and copy credentials into `.env` (see `.env.example`).

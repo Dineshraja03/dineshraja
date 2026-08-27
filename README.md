@@ -155,6 +155,17 @@ Cloudflare Pages layout (static assets at the root + a `_worker.js` SSR function
 4. Add the same env vars as above (build-time `VITE_*` and runtime `SUPABASE_*`/`CLOUDINARY_*`)
 5. For a one-off upload instead of Git: `bun run deploy:pages`
 
+### Vercel
+
+The same repo deploys to Vercel via [Nitro](https://v3.nitro.build/) (`nitro/vite`), which the Vite config switches to automatically when `VERCEL` is set (i.e. on Vercel's build servers). `vercel.json` sets the `tanstack-start` framework preset and the same security headers.
+
+1. Import the repo in Vercel (framework auto-detected as **TanStack Start**; `vercel.json` enforces it)
+2. Build command: `npm run build` (set **Output Directory** is ignored — Nitro writes `.vercel/output`)
+3. Add env vars in Vercel project settings (Settings → Environment Variables):
+   - **Build-time:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SITE_URL`
+   - **Runtime:** `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CLOUDINARY_*`
+4. Push to Git (or `vercel`) to deploy. For a local Vercel-shaped build: `DEPLOY_TARGET=vercel npm run build`
+
 
 1. Create a Supabase project and copy credentials into `.env` (see `.env.example`).
 2. Run migrations: `supabase db push` or apply SQL files in `supabase/migrations/` via the Supabase SQL editor.

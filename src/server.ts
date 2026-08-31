@@ -78,6 +78,7 @@ function buildContentSecurityPolicy(): string {
     "media-src 'self' blob: https://res.cloudinary.com",
     "font-src 'self' data:",
     "worker-src 'self' blob:",
+    "frame-src 'self' https://www.youtube.com",
     `connect-src 'self' https://api.cloudinary.com ${supabaseSources.join(" ")}`,
   ].join("; ");
 }

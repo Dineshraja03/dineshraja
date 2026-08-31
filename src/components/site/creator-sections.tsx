@@ -6,6 +6,7 @@ import { sendContactMessage } from "@/lib/contact";
 import { toast } from "sonner";
 import { z } from "zod";
 import { MediaImg } from "@/lib/media";
+import { isYouTubeUrl, extractYouTubeId, getYouTubeEmbedUrl } from "@/lib/youtube";
 
 export function CreatorHero({ title, subtitle, media }: { title: string; subtitle: string | null; media: string | null }) {
   return (
@@ -81,21 +82,56 @@ function Videography({ section, items }: { section: Section; items: SectionItem[
     <section className="py-20 md:py-28">
       <SectionHeader section={section} />
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-6 md:grid-cols-2">
-        {list.map((it, i) => (
-          <motion.a
-            key={it.id} href={it.link_url ?? undefined} target="_blank" rel="noreferrer"
-            initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: i * 0.05 }}
-            className={`group relative block overflow-hidden rounded-lg ${i === 0 ? "md:col-span-2" : ""}`}
-          >
-            {it.media_url && <MediaImg src={it.media_url} alt={it.alt_text ?? it.title} className="aspect-[16/9] w-full object-cover transition duration-700 group-hover:scale-105" loading="lazy" />}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-            <div className="absolute inset-0 flex flex-col justify-end p-5 text-white">
-              <div className="flex items-center gap-2 text-xs font-body opacity-90">▶ {it.subtitle}</div>
-              <h3 className="font-heading text-2xl md:text-3xl">{it.title}</h3>
-            </div>
-          </motion.a>
-        ))}
+        {list.map((it, i) => {
+          const youtubeId = it.link_url ? extractYouTubeId(it.link_url) : null;
+          const isYouTube = youtubeId !== null;
+
+          if (isYouTube) {
+            return (
+              <motion.div
+                key={it.id}
+                initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.05 }}
+                className={`group relative overflow-hidden rounded-lg ${i === 0 ? "md:col-span-2" : ""}`}
+              >
+                <div className="relative aspect-[16/9] bg-black">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={getYouTubeEmbedUrl(youtubeId)}
+                    title={it.title}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 flex flex-col justify-end p-5 text-white pointer-events-none">
+                  <div className="flex items-center gap-2 text-xs font-body opacity-90">▶ {it.subtitle}</div>
+                  <h3 className="font-heading text-2xl md:text-3xl">{it.title}</h3>
+                </div>
+              </motion.div>
+            );
+          }
+
+          // Fallback for non-YouTube videos
+          return (
+            <motion.a
+              key={it.id} href={it.link_url ?? undefined} target="_blank" rel="noreferrer"
+              initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.05 }}
+              className={`group relative block overflow-hidden rounded-lg ${i === 0 ? "md:col-span-2" : ""}`}
+            >
+              {it.media_url && <MediaImg src={it.media_url} alt={it.alt_text ?? it.title} className="aspect-[16/9] w-full object-cover transition duration-700 group-hover:scale-105" loading="lazy" />}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+              <div className="absolute inset-0 flex flex-col justify-end p-5 text-white">
+                <div className="flex items-center gap-2 text-xs font-body opacity-90">▶ {it.subtitle}</div>
+                <h3 className="font-heading text-2xl md:text-3xl">{it.title}</h3>
+              </div>
+            </motion.a>
+          );
+        })}
       </div>
     </section>
   );

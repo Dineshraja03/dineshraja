@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadMediaFile } from "@/lib/upload-media";
 import { toast } from "sonner";
 import { MediaImg } from "@/lib/media";
-import { Eye, EyeOff, Plus, Trash2, Upload } from "lucide-react";
+import { Eye, EyeOff, Plus, Trash2, Upload, Check, X } from "lucide-react";
+import { isYouTubeUrl, extractYouTubeId, getYouTubeEmbedUrl } from "@/lib/youtube";
 
 export const Route = createFileRoute("/_authenticated/admin/items")({
   component: ItemsPage,
@@ -108,6 +109,9 @@ function ItemEditor({ item, onSave, onClose }: { item: Item; onSave: (v: Partial
   const isNew = !item.id;
   const [values, setValues] = useState<Item>(item);
   const [uploading, setUploading] = useState<null | "primary" | "secondary">(null);
+  const [showYouTubePreview, setShowYouTubePreview] = useState(false);
+  const youtubeId = values.link_url ? extractYouTubeId(values.link_url) : null;
+  const isValidYouTube = youtubeId !== null;
 
   async function upload(file: File, target: "primary" | "secondary") {
     setUploading(target);
@@ -162,7 +166,38 @@ function ItemEditor({ item, onSave, onClose }: { item: Item; onSave: (v: Partial
           <Field label="Tags (comma-separated)">
             <input value={values.tags.join(", ")} onChange={(e) => setValues({ ...values, tags: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })} className={inputCls} />
           </Field>
-          <Field label="Link URL"><input value={values.link_url ?? ""} onChange={(e) => setValues({ ...values, link_url: e.target.value || null })} className={inputCls} /></Field>
+          <Field label="Link URL">
+            <div className="flex items-center gap-2">
+              <input value={values.link_url ?? ""} onChange={(e) => setValues({ ...values, link_url: e.target.value || null })} className={inputCls} placeholder="YouTube URL" />
+              <button
+                type="button"
+                onClick={() => setShowYouTubePreview(!showYouTubePreview)}
+                className={`inline-flex items-center gap-1 rounded-md px-3 py-2 text-xs font-medium transition ${
+                  isValidYouTube
+                    ? "bg-green-600/20 text-green-600 hover:bg-green-600/30"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                {isValidYouTube ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
+                {isValidYouTube ? "Valid YouTube" : "Not YouTube"}
+              </button>
+            </div>
+            {isValidYouTube && showYouTubePreview && (
+              <div className="mt-3 rounded-md border border-border bg-black/20 p-3">
+                <p className="mb-2 text-xs text-muted-foreground">YouTube Preview</p>
+                <iframe
+                  width="100%"
+                  height="300"
+                  src={getYouTubeEmbedUrl(youtubeId)}
+                  title="YouTube preview"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="rounded"
+                />
+              </div>
+            )}
+          </Field>
           <Field label="Order index"><input type="number" value={values.order_index} onChange={(e) => setValues({ ...values, order_index: Number(e.target.value) })} className={inputCls} /></Field>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={values.is_visible} onChange={(e) => setValues({ ...values, is_visible: e.target.checked })} />

@@ -105,8 +105,8 @@ function BeforeAfter({ it }: { it: SectionItem }) {
   const [pos, setPos] = useState(50);
   return (
     <figure className="relative overflow-hidden rounded-lg border border-border">
-      <div className="relative aspect-[16/9]">
-        {it.media_url_secondary && <MediaImg src={it.media_url_secondary} alt={`${it.alt_text ?? it.title} — after`} className="absolute inset-0 h-full w-full object-cover" />}
+      <div className="relative w-full" style={{ aspectRatio: "auto" }}>
+        {it.media_url_secondary && <MediaImg src={it.media_url_secondary} alt={`${it.alt_text ?? it.title} — after`} className="h-auto w-full object-cover" />}
         {it.media_url && (
           <div className="absolute inset-0 overflow-hidden" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
             <MediaImg src={it.media_url} alt={`${it.alt_text ?? it.title} — before`} className="h-full w-full object-cover" />
@@ -134,8 +134,12 @@ function Editing({ section, items }: { section: Section; items: SectionItem[] })
   return (
     <section className="py-20 md:py-28">
       <SectionHeader section={section} />
-      <div className="mx-auto grid max-w-6xl gap-8 px-6 md:grid-cols-2">
-        {list.map((it) => <BeforeAfter key={it.id} it={it} />)}
+      <div className="mx-auto max-w-6xl columns-1 gap-4 px-6 sm:columns-2 lg:columns-3">
+        {list.map((it) => (
+          <div key={it.id} className="mb-4 break-inside-avoid">
+            <BeforeAfter it={it} />
+          </div>
+        ))}
       </div>
     </section>
   );

@@ -184,17 +184,31 @@ function ItemEditor({ item, onSave, onClose }: { item: Item; onSave: (v: Partial
             </div>
             {isValidYouTube && showYouTubePreview && (
               <div className="mt-3 rounded-md border border-border bg-black/20 p-3">
-                <p className="mb-2 text-xs text-muted-foreground">YouTube Preview</p>
-                <iframe
-                  width="100%"
-                  height="300"
-                  src={getYouTubeEmbedUrl(youtubeId)}
-                  title="YouTube preview"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="rounded"
-                />
+                <p className="mb-2 text-xs text-muted-foreground">YouTube Preview (click-to-play facade)</p>
+                <div className="relative aspect-[16/9] w-full rounded overflow-hidden bg-black">
+                  <div
+                    onClick={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      const id = youtubeId;
+                      el.innerHTML = `<iframe src="${getYouTubeEmbedUrl(id, true)}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="width:100%;height:100%;position:absolute;inset:0"></iframe>`;
+                    }}
+                    className="group absolute inset-0 cursor-pointer overflow-hidden"
+                  >
+                    {values.media_url ? (
+                      <img src={values.media_url} alt="preview" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="h-full w-full bg-gradient-to-br from-slate-900 to-black" />
+                    )}
+                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/90 group-hover:bg-white transition shadow-lg group-hover:shadow-2xl">
+                        <svg className="h-6 w-6 fill-black ml-0.5" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M5 3v18l15-9L5 3z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </Field>

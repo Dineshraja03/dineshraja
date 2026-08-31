@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { MediaImg } from "@/lib/media";
 import { isYouTubeUrl, extractYouTubeId, getYouTubeEmbedUrl } from "@/lib/youtube";
+import { YouTubePlayer } from "@/components/ui/youtube-player";
 
 export function CreatorHero({ title, subtitle, media }: { title: string; subtitle: string | null; media: string | null }) {
   return (
@@ -78,6 +79,18 @@ function Photography({ section, items }: { section: Section; items: SectionItem[
 
 function Videography({ section, items }: { section: Section; items: SectionItem[] }) {
   const list = itemsFor(items, section.id);
+  const [playingIds, setPlayingIds] = useState<Set<string>>(new Set());
+
+  const togglePlaying = (id: string, playing: boolean) => {
+    const newSet = new Set(playingIds);
+    if (playing) {
+      newSet.add(id);
+    } else {
+      newSet.delete(id);
+    }
+    setPlayingIds(newSet);
+  };
+
   return (
     <section className="py-20 md:py-28">
       <SectionHeader section={section} />
@@ -85,32 +98,40 @@ function Videography({ section, items }: { section: Section; items: SectionItem[
         {list.map((it, i) => {
           const youtubeId = it.link_url ? extractYouTubeId(it.link_url) : null;
           const isYouTube = youtubeId !== null;
+          const isPlaying = playingIds.has(it.id);
 
           if (isYouTube) {
             return (
               <motion.div
                 key={it.id}
-                initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.05 }}
                 className={`group relative overflow-hidden rounded-lg ${i === 0 ? "md:col-span-2" : ""}`}
               >
-                <div className="relative aspect-[16/9] bg-black">
-                  <iframe
-                    width="100%"
-                    height="100%"
-                    src={getYouTubeEmbedUrl(youtubeId)}
+                {/* Click-to-play facade */}
+                <div className="relative aspect-[16/9]">
+                  <YouTubePlayer
+                    videoId={youtubeId}
+                    thumbnailUrl={it.media_url}
                     title={it.title}
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="absolute inset-0"
+                    className="relative aspect-[16/9] w-full rounded-lg"
+                    isPlaying={isPlaying}
+                    onPlayingChange={(playing) => togglePlaying(it.id, playing)}
                   />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
-                <div className="absolute inset-0 flex flex-col justify-end p-5 text-white pointer-events-none">
-                  <div className="flex items-center gap-2 text-xs font-body opacity-90">▶ {it.subtitle}</div>
-                  <h3 className="font-heading text-2xl md:text-3xl">{it.title}</h3>
-                </div>
+
+                {/* Overlay with title and subtitle - hidden when playing */}
+                {!isPlaying && (
+                  <div className="absolute inset-0 flex flex-col justify-end p-5 text-white pointer-events-none">
+                    <div className="bg-gradient-to-t from-black/70 to-transparent absolute inset-0 pointer-events-none" />
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-2 text-xs font-body opacity-90">▶ {it.subtitle}</div>
+                      <h3 className="font-heading text-2xl md:text-3xl">{it.title}</h3>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             );
           }

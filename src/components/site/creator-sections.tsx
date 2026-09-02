@@ -9,11 +9,20 @@ import { MediaImg } from "@/lib/media";
 import { isYouTubeUrl, extractYouTubeId, getYouTubeEmbedUrl } from "@/lib/youtube";
 import { YouTubePlayer } from "@/components/ui/youtube-player";
 
-export function CreatorHero({ title, subtitle, media }: { title: string; subtitle: string | null; media: string | null }) {
+export function CreatorHero({ title, subtitle, media, mediaPc, mediaMobile }: { title: string; subtitle: string | null; media: string | null; mediaPc?: string | null; mediaMobile?: string | null }) {
+  // Use device-specific images if available, otherwise fallback to the original media URL
+  const pcMedia = mediaPc ?? media;
+  const mobileMedia = mediaMobile ?? media;
+  
   return (
     <section className="relative isolate flex min-h-[92vh] w-full items-end overflow-hidden">
-      {media && (
-        <MediaImg src={media} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover animate-develop" />
+      {/* Mobile hero image */}
+      {mobileMedia && (
+        <MediaImg src={mobileMedia} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover animate-develop md:hidden" />
+      )}
+      {/* PC hero image */}
+      {pcMedia && (
+        <MediaImg src={pcMedia} alt="" aria-hidden className="hidden absolute inset-0 h-full w-full object-cover animate-develop md:block" />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
       <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-16 md:pb-24">
@@ -294,7 +303,7 @@ function Contact({ section }: { section: Section }) {
         className="mx-auto grid max-w-2xl gap-4 px-6"
       >
         <input required name="name" placeholder="Your name" className="rounded-md border border-border bg-card px-4 py-3 font-body text-sm focus:border-accent focus:outline-none" />
-        <input required type="email" name="email" placeholder="Email" className="rounded-md border border-border bg-card px-4 py-3 font-body text-sm focus:border-accent focus:outline-none" />
+        <input required type="email" name="email" placeholder="Email or phone" className="rounded-md border border-border bg-card px-4 py-3 font-body text-sm focus:border-accent focus:outline-none" />
         <textarea required name="message" placeholder="What are you working on?" rows={5} className="rounded-md border border-border bg-card px-4 py-3 font-body text-sm focus:border-accent focus:outline-none" />
         <button type="submit" disabled={sending} className="rounded-md bg-accent px-6 py-3 font-heading text-base text-accent-foreground transition hover:opacity-90 disabled:opacity-60">{sending ? "Sending…" : "Send message"}</button>
       </form>

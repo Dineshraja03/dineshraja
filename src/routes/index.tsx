@@ -35,7 +35,7 @@ function SiteContent() {
   return (
     <main key={mode} className={mode === "creator" ? "animate-develop" : "animate-boot"}>
       {mode === "creator" ? (
-        <CreatorHero title={settings?.hero_title ?? ""} subtitle={settings?.hero_subtitle ?? null} media={settings?.hero_media_url ?? null} />
+        <CreatorHero title={settings?.hero_title ?? ""} subtitle={settings?.hero_subtitle ?? null} media={settings?.hero_media_url ?? null} mediaPc={settings?.hero_media_url_pc ?? null} mediaMobile={settings?.hero_media_url_mobile ?? null} />
       ) : (
         <DeveloperHero title={settings?.hero_title ?? ""} subtitle={settings?.hero_subtitle ?? null} />
       )}

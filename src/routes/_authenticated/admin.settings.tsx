@@ -13,13 +13,14 @@ export const Route = createFileRoute("/_authenticated/admin/settings")({
 type Settings = {
   id: string; mode: "creator" | "developer" | "both";
   hero_title: string; hero_subtitle: string | null; hero_media_url: string | null;
+  hero_media_url_pc: string | null; hero_media_url_mobile: string | null;
   seo_title: string | null; seo_description: string | null;
   theme_overrides: Record<string, unknown> | null;
 };
 
 function SettingsPage() {
   const [mode, setMode] = useState<"creator" | "developer">("creator");
-  const [uploadingHero, setUploadingHero] = useState(false);
+  const [uploadingHero, setUploadingHero] = useState<null | "primary" | "pc" | "mobile">(null);
   const qc = useQueryClient();
   const { data } = useQuery({
     queryKey: ["admin", "settings", mode],
@@ -36,6 +37,7 @@ function SettingsPage() {
     mutationFn: async (v: Settings) => {
       const { error } = await supabase.from("site_settings").update({
         hero_title: v.hero_title, hero_subtitle: v.hero_subtitle, hero_media_url: v.hero_media_url,
+        hero_media_url_pc: v.hero_media_url_pc, hero_media_url_mobile: v.hero_media_url_mobile,
         seo_title: v.seo_title, seo_description: v.seo_description,
         theme_overrides: v.theme_overrides ?? {},
       } as never).eq("id", v.id);
@@ -59,29 +61,58 @@ function SettingsPage() {
         <form onSubmit={(e) => { e.preventDefault(); save.mutate(form); }} className="mt-6 grid max-w-2xl gap-4">
           <Field label="Hero title"><input required value={form.hero_title} onChange={(e) => setForm({ ...form, hero_title: e.target.value })} className={inputCls} /></Field>
           <Field label="Hero subtitle"><textarea rows={2} value={form.hero_subtitle ?? ""} onChange={(e) => setForm({ ...form, hero_subtitle: e.target.value || null })} className={inputCls} /></Field>
-          <Field label="Hero media URL">
-            <div className="flex items-center gap-2">
-              <input value={form.hero_media_url ?? ""} onChange={(e) => setForm({ ...form, hero_media_url: e.target.value || null })} className={inputCls} placeholder="https://... or upload" />
-              <label className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-md border border-border bg-background px-3 py-2 text-xs">
-                <Upload className="h-3.5 w-3.5" /> {uploadingHero ? "…" : "Upload"}
-                <input type="file" accept="image/*,video/*" className="hidden" onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  setUploadingHero(true);
-                  try {
-                    const url = await uploadMediaFile(file);
-                    setForm((f) => f ? { ...f, hero_media_url: url } : f);
-                    toast.success("Uploaded to Cloudinary");
-                  } catch (err: unknown) {
-                    toast.error(err instanceof Error ? err.message : "Upload failed");
-                  } finally {
-                    setUploadingHero(false);
-                    e.target.value = "";
-                  }
-                }} />
-              </label>
+          <div className="rounded-md border border-border/50 bg-card/50 p-4">
+            <h3 className="mb-3 text-sm font-medium">Hero images by device</h3>
+            <div className="space-y-3">
+              <Field label="PC landscape hero (≥768px)">
+                <div className="flex items-center gap-2">
+                  <input value={form.hero_media_url_pc ?? ""} onChange={(e) => setForm({ ...form, hero_media_url_pc: e.target.value || null })} className={inputCls} placeholder="https://... or upload" />
+                  <label className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-md border border-border bg-background px-3 py-2 text-xs">
+                    <Upload className="h-3.5 w-3.5" /> {uploadingHero === "pc" ? "…" : "Upload"}
+                    <input type="file" accept="image/*,video/*" className="hidden" onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingHero("pc");
+                      try {
+                        const url = await uploadMediaFile(file);
+                        setForm((f) => f ? { ...f, hero_media_url_pc: url } : f);
+                        toast.success("Uploaded to Cloudinary");
+                      } catch (err: unknown) {
+                        toast.error(err instanceof Error ? err.message : "Upload failed");
+                      } finally {
+                        setUploadingHero(null);
+                        e.target.value = "";
+                      }
+                    }} />
+                  </label>
+                </div>
+              </Field>
+              <Field label="Mobile hero (<768px)">
+                <div className="flex items-center gap-2">
+                  <input value={form.hero_media_url_mobile ?? ""} onChange={(e) => setForm({ ...form, hero_media_url_mobile: e.target.value || null })} className={inputCls} placeholder="https://... or upload" />
+                  <label className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-md border border-border bg-background px-3 py-2 text-xs">
+                    <Upload className="h-3.5 w-3.5" /> {uploadingHero === "mobile" ? "…" : "Upload"}
+                    <input type="file" accept="image/*,video/*" className="hidden" onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingHero("mobile");
+                      try {
+                        const url = await uploadMediaFile(file);
+                        setForm((f) => f ? { ...f, hero_media_url_mobile: url } : f);
+                        toast.success("Uploaded to Cloudinary");
+                      } catch (err: unknown) {
+                        toast.error(err instanceof Error ? err.message : "Upload failed");
+                      } finally {
+                        setUploadingHero(null);
+                        e.target.value = "";
+                      }
+                    }} />
+                  </label>
+                </div>
+              </Field>
             </div>
-          </Field>
+            <p className="mt-2 text-xs text-muted-foreground">Upload device-specific hero images for optimal display on different screen sizes.</p>
+          </div>
           <Field label="SEO title"><input value={form.seo_title ?? ""} onChange={(e) => setForm({ ...form, seo_title: e.target.value || null })} className={inputCls} /></Field>
           <Field label="SEO description"><textarea rows={2} value={form.seo_description ?? ""} onChange={(e) => setForm({ ...form, seo_description: e.target.value || null })} className={inputCls} /></Field>
           <button className="mt-2 self-start rounded-md bg-accent px-5 py-2 text-sm text-accent-foreground">Save</button>

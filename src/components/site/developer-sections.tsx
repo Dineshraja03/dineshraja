@@ -156,7 +156,7 @@ function Contact({ section }: { section: Section }) {
   const [input, setInput] = useState("");
   const [step, setStep] = useState<"name" | "email" | "message">("name");
   const [draft, setDraft] = useState({ name: "", email: "", message: "" });
-  const prompts = { name: "your name?", email: "your email?", message: "your message?" } as const;
+  const prompts = { name: "your name?", email: "your email or phone?", message: "your message?" } as const;
   return (
     <section className="py-16 md:py-24">
       <Header section={section} />

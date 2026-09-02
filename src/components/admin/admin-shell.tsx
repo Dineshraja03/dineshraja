@@ -1,6 +1,6 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutGrid, LayoutList, MessageSquareQuote, Settings, LogOut, ExternalLink, Inbox } from "lucide-react";
+import { LayoutGrid, LayoutList, MessageSquareQuote, Settings, LogOut, ExternalLink, Inbox, Bell } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/lib/use-admin";
 
@@ -10,6 +10,7 @@ const nav = [
   { to: "/admin/items", label: "Content items", icon: LayoutList },
   { to: "/admin/messages", label: "Messages", icon: Inbox },
   { to: "/admin/testimonials", label: "Testimonials", icon: MessageSquareQuote },
+  { to: "/admin/notifications", label: "Notifications", icon: Bell },
   { to: "/admin/settings", label: "Site settings", icon: Settings },
 ] as const;
 

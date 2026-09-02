@@ -34,6 +34,8 @@ export type SiteSettings = {
   hero_title: string;
   hero_subtitle: string | null;
   hero_media_url: string | null;
+  hero_media_url_pc: string | null;
+  hero_media_url_mobile: string | null;
   seo_title: string | null;
   seo_description: string | null;
   theme_overrides: Record<string, unknown>;

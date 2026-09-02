@@ -4,6 +4,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Mail, MailOpen, Trash2 } from "lucide-react";
+import { useMessageNotifications } from "@/lib/message-notifications";
 
 export const Route = createFileRoute("/_authenticated/admin/messages")({
   component: MessagesPage,
@@ -16,6 +17,9 @@ type Msg = {
 };
 
 function MessagesPage() {
+  // Set up real-time notifications
+  useMessageNotifications();
+
   const qc = useQueryClient();
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [openId, setOpenId] = useState<string | null>(null);

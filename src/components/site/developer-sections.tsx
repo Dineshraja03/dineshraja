@@ -4,6 +4,8 @@ import type { Section, SectionItem } from "@/lib/portfolio";
 import { itemsFor } from "@/lib/portfolio";
 import { sendContactMessage } from "@/lib/contact";
 import { toast } from "sonner";
+import { MediaImg } from "@/lib/media";
+import { normalizedSectionKey } from "@/lib/section-catalog";
 
 export function DeveloperHero({ title, subtitle }: { title: string; subtitle: string | null }) {
   const lines = [
@@ -87,6 +89,7 @@ function Projects({ section, items }: { section: Section; items: SectionItem[] }
               transition={{ duration: 0.4, delay: i * 0.04 }}
               className="group block rounded-md border border-border bg-card p-5 transition hover:-translate-y-0.5 hover:border-accent hover:shadow-[0_0_0_1px_var(--color-accent)]"
             >
+              {it.media_url && <MediaImg src={it.media_url} alt={it.alt_text ?? it.title} className="mb-4 aspect-video w-full rounded object-cover" loading="lazy" />}
               <div className="flex items-center gap-2 font-mono-token text-sm">
                 <span className="text-accent">⌘</span>
                 <span className="text-foreground">{it.title}</span>
@@ -117,6 +120,7 @@ function Experiments({ section, items }: { section: Section; items: SectionItem[
       <div className="mx-auto grid max-w-6xl gap-4 px-6 md:grid-cols-3">
         {list.map((it) => (
           <div key={it.id} className="rounded-md border border-dashed border-border bg-card p-5">
+            {it.media_url && <MediaImg src={it.media_url} alt={it.alt_text ?? it.title} className="mb-4 aspect-video w-full rounded object-cover" loading="lazy" />}
             <div className="font-mono-token text-sm text-accent">~/exp/{it.title}</div>
             <div className="mt-1 font-body text-xs text-muted-foreground">{it.subtitle}</div>
             <p className="mt-3 font-body text-sm text-foreground/80">{it.body}</p>
@@ -202,8 +206,8 @@ function Contact({ section }: { section: Section }) {
 }
 
 export function DeveloperSectionRenderer({ section, items }: { section: Section; items: SectionItem[] }) {
-  switch (section.key) {
-    case "projects": return <Projects section={section} items={items} />;
+  switch (normalizedSectionKey(section.key)) {
+    case "project": return <Projects section={section} items={items} />;
     case "experiments": return <Experiments section={section} items={items} />;
     case "stack": return <Stack section={section} items={items} />;
     case "contact": return <Contact section={section} />;

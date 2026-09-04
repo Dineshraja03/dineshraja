@@ -175,12 +175,23 @@
 @keyframes cursor-blink { 0%,49% { opacity: 1 } 50%,100% { opacity: 0 } }
 @utility cursor-blink { animation: cursor-blink 1s step-end infinite; }
 
-@keyframes photo-develop { from { filter: blur(12px) saturate(0.3) brightness(1.4); opacity: 0; } to { filter: none; opacity: 1; } }
+@keyframes photo-develop { from { transform: translateY(-32px); filter: blur(12px) saturate(0.3) brightness(1.4); opacity: 0; } to { transform: translateY(0); filter: none; opacity: 1; } }
 @utility animate-develop { animation: photo-develop 700ms ease-out both; }
 
-@keyframes terminal-boot { from { transform: translateY(4px); opacity: 0; clip-path: inset(0 100% 0 0); } to { transform: none; opacity: 1; clip-path: inset(0 0 0 0); } }
+@keyframes terminal-boot { from { transform: translateY(-32px); opacity: 0; clip-path: inset(0 100% 0 0); } to { transform: translateY(0); opacity: 1; clip-path: inset(0 0 0 0); } }
 @utility animate-boot { animation: terminal-boot 500ms steps(20,end) both; }
 
+@keyframes mode-breaker-noise {
+  0%, 100% { transform: translate(0); opacity: 0.15; }
+  20% { transform: translate(2px, -1px); opacity: 0.4; }
+  40% { transform: translate(-1px, 2px); opacity: 0.2; }
+  60% { transform: translate(1px, 1px); opacity: 0.35; }
+}
+.mode-breaker-noise {
+  background: repeating-linear-gradient(0deg, transparent 0 5px, color-mix(in oklab, var(--color-accent) 28%, transparent) 5px 6px);
+  animation: mode-breaker-noise 1.8s steps(2, end) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-develop, .animate-boot { animation: none !important; }
+  .animate-develop, .animate-boot, .mode-breaker-noise { animation: none !important; }
 }

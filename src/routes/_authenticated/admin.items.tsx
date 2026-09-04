@@ -12,6 +12,7 @@ import type { DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
+import { hasSectionField, normalizedSectionKey } from "@/lib/section-catalog";
 
 export const Route = createFileRoute("/_authenticated/admin/items")({
   component: ItemsPage,
@@ -39,6 +40,7 @@ function ItemsPage() {
   });
   const [sectionId, setSectionId] = useState<string | null>(null);
   const active = sectionId ?? sections[0]?.id ?? null;
+  const activeSection = sections.find((section) => section.id === active);
   const { data: items = EMPTY_ITEMS } = useQuery({
     queryKey: ["admin", "items", active],
     enabled: !!active,
@@ -126,10 +128,12 @@ function ItemsPage() {
       </label>
       <div className="mt-6 flex items-center justify-between">
         <div className="text-xs text-muted-foreground">{itemsLocal.length} items</div>
-        <button onClick={() => setEditing({ id: "", section_id: active ?? "", title: "", subtitle: null, body: null, media_url: null, media_url_secondary: null, alt_text: null, tags: [], order_index: 0, link_url: null, is_visible: true, meta: {} } as Item)}
-          className="inline-flex items-center gap-1 rounded-md bg-accent px-3 py-2 text-sm text-accent-foreground">
-          <Plus className="h-4 w-4" /> New item
-        </button>
+        {activeSection && activeSection.key !== "contact" && activeSection.key !== "testimonials" && (
+          <button onClick={() => setEditing({ id: "", section_id: active ?? "", title: "", subtitle: null, body: null, media_url: null, media_url_secondary: null, alt_text: null, tags: [], order_index: 0, link_url: null, is_visible: true, meta: {} } as Item)}
+            className="inline-flex items-center gap-1 rounded-md bg-accent px-3 py-2 text-sm text-accent-foreground">
+            <Plus className="h-4 w-4" /> New item
+          </button>
+        )}
       </div>
       
       {viewMode === "list" ? (
@@ -153,7 +157,7 @@ function ItemsPage() {
           </SortableContext>
         </DndContext>
       )}
-      {editing && <ItemEditor item={editing} onClose={() => setEditing(null)} onSave={(v) => save.mutate(v)} />}
+      {editing && <ItemEditor item={editing} sectionKey={activeSection?.key ?? ""} onClose={() => setEditing(null)} onSave={(v) => save.mutate(v)} />}
     </div>
   );
 }
@@ -208,13 +212,15 @@ function SortableItemCard({ item, onEdit, onToggle, onDelete }: { item: Item; on
   );
 }
 
-function ItemEditor({ item, onSave, onClose }: { item: Item; onSave: (v: Partial<Item> & { id?: string }) => void; onClose: () => void }) {
+function ItemEditor({ item, sectionKey, onSave, onClose }: { item: Item; sectionKey: string; onSave: (v: Partial<Item> & { id?: string }) => void; onClose: () => void }) {
   const isNew = !item.id;
   const [values, setValues] = useState<Item>(item);
-  const [uploading, setUploading] = useState<null | "primary" | "secondary">(null);
+  const key = normalizedSectionKey(sectionKey);
+  const [uploading, setUploading] = useState<null | "primary" | "secondary" | "card">(null);
   const [showYouTubePreview, setShowYouTubePreview] = useState(false);
   const youtubeId = values.link_url ? extractYouTubeId(values.link_url) : null;
   const isValidYouTube = youtubeId !== null;
+  const cardImages = Array.isArray(values.meta?.image_urls) ? values.meta.image_urls.filter((url): url is string => typeof url === "string") : [];
 
   async function upload(file: File, target: "primary" | "secondary") {
     setUploading(target);
@@ -222,6 +228,17 @@ function ItemEditor({ item, onSave, onClose }: { item: Item; onSave: (v: Partial
       const url = await uploadMediaFile(file);
       setValues((v) => target === "primary" ? { ...v, media_url: url } : { ...v, media_url_secondary: url });
       toast.success("Uploaded to Cloudinary");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
+    } finally { setUploading(null); }
+  }
+
+  async function uploadCardImages(files: FileList) {
+    setUploading("card");
+    try {
+      const urls = await Promise.all(Array.from(files).map((file) => uploadMediaFile(file)));
+      setValues((v) => ({ ...v, meta: { ...v.meta, image_urls: [...cardImages, ...urls] } }));
+      toast.success(`${urls.length} image${urls.length === 1 ? "" : "s"} uploaded`);
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally { setUploading(null); }
@@ -245,9 +262,9 @@ function ItemEditor({ item, onSave, onClose }: { item: Item; onSave: (v: Partial
           className="mt-4 grid gap-3 flex-1 overflow-y-auto"
         >
           <Field label="Title" required><input required value={values.title} onChange={(e) => setValues({ ...values, title: e.target.value })} className={inputCls} /></Field>
-          <Field label="Subtitle"><input value={values.subtitle ?? ""} onChange={(e) => setValues({ ...values, subtitle: e.target.value || null })} className={inputCls} /></Field>
-          <Field label="Body (markdown)"><textarea rows={4} value={values.body ?? ""} onChange={(e) => setValues({ ...values, body: e.target.value || null })} className={inputCls} /></Field>
-          <Field label="Primary media">
+          {hasSectionField(key, "subtitle") && <Field label="Subtitle"><input value={values.subtitle ?? ""} onChange={(e) => setValues({ ...values, subtitle: e.target.value || null })} className={inputCls} /></Field>}
+          {hasSectionField(key, "body") && <Field label="Body (markdown)"><textarea rows={4} value={values.body ?? ""} onChange={(e) => setValues({ ...values, body: e.target.value || null })} className={inputCls} /></Field>}
+          {hasSectionField(key, "primaryMedia") && <Field label={key === "videography" ? "Thumbnail (optional)" : "Image (optional)"}>
             <div className="flex items-center gap-2">
               <input value={values.media_url ?? ""} onChange={(e) => setValues({ ...values, media_url: e.target.value || null })} className={inputCls} placeholder="https://... or upload" />
               <label className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-border bg-background px-3 py-2 text-xs shrink-0">
@@ -255,8 +272,8 @@ function ItemEditor({ item, onSave, onClose }: { item: Item; onSave: (v: Partial
                 <input type="file" accept="image/*,video/*" className="hidden" onChange={(e) => e.target.files && upload(e.target.files[0], "primary")} />
               </label>
             </div>
-          </Field>
-          <Field label="Secondary media (before/after 'before' image)">
+          </Field>}
+          {hasSectionField(key, "secondaryMedia") && <Field label="Secondary image (after)">
             <div className="flex items-center gap-2">
               <input value={values.media_url_secondary ?? ""} onChange={(e) => setValues({ ...values, media_url_secondary: e.target.value || null })} className={inputCls} />
               <label className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-border bg-background px-3 py-2 text-xs shrink-0">
@@ -264,12 +281,21 @@ function ItemEditor({ item, onSave, onClose }: { item: Item; onSave: (v: Partial
                 <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && upload(e.target.files[0], "secondary")} />
               </label>
             </div>
-          </Field>
-          <Field label="Alt text (required for images)"><input value={values.alt_text ?? ""} onChange={(e) => setValues({ ...values, alt_text: e.target.value || null })} className={inputCls} /></Field>
-          <Field label="Tags (comma-separated)">
+          </Field>}
+          {hasSectionField(key, "cardImages") && <Field label="Square card images">
+            <div className="flex items-center gap-2">
+              <label className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-border bg-background px-3 py-2 text-xs">
+                <Upload className="h-3.5 w-3.5" /> {uploading === "card" ? "Uploading…" : "Upload images"}
+                <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && uploadCardImages(e.target.files)} />
+              </label>
+              <span className="text-xs text-muted-foreground">{cardImages.length} uploaded</span>
+            </div>
+          </Field>}
+          {hasSectionField(key, "altText") && <Field label="Alt text (required for images)"><input value={values.alt_text ?? ""} onChange={(e) => setValues({ ...values, alt_text: e.target.value || null })} className={inputCls} /></Field>}
+          {hasSectionField(key, "tags") && <Field label="Tags (comma-separated)">
             <input value={values.tags.join(", ")} onChange={(e) => setValues({ ...values, tags: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })} className={inputCls} />
-          </Field>
-          <Field label="Link URL">
+          </Field>}
+          {hasSectionField(key, "link") && <Field label={key === "videography" ? "YouTube URL" : "Link URL"}>
             <div className="flex items-center gap-2">
               <input value={values.link_url ?? ""} onChange={(e) => setValues({ ...values, link_url: e.target.value || null })} className={inputCls} placeholder="YouTube URL" />
               <button
@@ -314,7 +340,7 @@ function ItemEditor({ item, onSave, onClose }: { item: Item; onSave: (v: Partial
                 </div>
               </div>
             )}
-          </Field>
+          </Field>}
           <Field label="Order index"><input type="number" value={values.order_index} onChange={(e) => setValues({ ...values, order_index: Number(e.target.value) })} className={inputCls} /></Field>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={values.is_visible} onChange={(e) => setValues({ ...values, is_visible: e.target.checked })} />

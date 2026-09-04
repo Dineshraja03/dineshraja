@@ -8,6 +8,7 @@ import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } 
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Eye, EyeOff, Trash2, Plus, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
+import { SECTION_DEFINITIONS, type SectionKey } from "@/lib/section-catalog";
 
 export const Route = createFileRoute("/_authenticated/admin/sections")({
   component: SectionsPage,
@@ -121,25 +122,50 @@ function ModeTabs({ value, onChange }: { value: "creator" | "developer"; onChang
 }
 
 function NewSectionForm({ onSubmit }: { onSubmit: (v: { key: string; title: string }) => void }) {
-  const [key, setKey] = useState("");
+  const [open, setOpen] = useState(false);
+  const [key, setKey] = useState<SectionKey>("photography");
   const [title, setTitle] = useState("");
+  const selected = SECTION_DEFINITIONS.find((definition) => definition.key === key)!;
   return (
-    <form
-      onSubmit={(e) => { e.preventDefault(); if (!key || !title) return; onSubmit({ key, title }); setKey(""); setTitle(""); }}
-      className="mt-6 flex flex-wrap items-end gap-2"
-    >
-      <label className="text-xs text-muted-foreground">Key
-        <input value={key} onChange={(e) => setKey(e.target.value)} placeholder="photography"
-          className="mt-1 block rounded-md border border-border bg-background px-3 py-2 text-sm" />
-      </label>
-      <label className="text-xs text-muted-foreground">Title
-        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Photography"
-          className="mt-1 block rounded-md border border-border bg-background px-3 py-2 text-sm" />
-      </label>
-      <button className="inline-flex items-center gap-1 rounded-md bg-accent px-3 py-2 text-sm text-accent-foreground">
+    <>
+      <button type="button" onClick={() => setOpen(true)} className="mt-6 inline-flex items-center gap-1 rounded-md bg-accent px-3 py-2 text-sm text-accent-foreground">
         <Plus className="h-4 w-4" /> Add section
       </button>
-    </form>
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setOpen(false)}>
+          <form onClick={(e) => e.stopPropagation()} onSubmit={(e) => { e.preventDefault(); if (!title.trim()) return; onSubmit({ key, title: title.trim() }); setTitle(""); setOpen(false); }} className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-lg border border-border bg-card p-5 md:p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="font-heading text-xl">Choose a section type</h2>
+                <p className="mt-1 text-sm text-muted-foreground">Each key controls the layout and fields available for its content.</p>
+              </div>
+              <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2">
+              {SECTION_DEFINITIONS.map((definition) => (
+                <button key={definition.key} type="button" onClick={() => setKey(definition.key)} className={`rounded-md border p-3 text-left transition ${key === definition.key ? "border-accent bg-accent/10" : "border-border hover:border-accent/60"}`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium">{definition.label}</span>
+                    <code className="text-[10px] text-muted-foreground">{definition.key}</code>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">{definition.description}</p>
+                </button>
+              ))}
+            </div>
+            <div className="mt-5 grid gap-3 border-t border-border pt-4">
+              <div className="text-xs text-muted-foreground">Selected key: <code className="text-foreground">{selected.key}</code></div>
+              <label className="text-xs text-muted-foreground">Section title *
+                <input required autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder={selected.label} className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+              </label>
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setOpen(false)} className="rounded-md border border-border px-4 py-2 text-sm">Cancel</button>
+                <button className="rounded-md bg-accent px-4 py-2 text-sm text-accent-foreground">Create section</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      )}
+    </>
   );
 }
 

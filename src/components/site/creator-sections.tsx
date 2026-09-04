@@ -8,6 +8,8 @@ import { z } from "zod";
 import { MediaImg } from "@/lib/media";
 import { isYouTubeUrl, extractYouTubeId, getYouTubeEmbedUrl } from "@/lib/youtube";
 import { YouTubePlayer } from "@/components/ui/youtube-player";
+import { normalizedSectionKey } from "@/lib/section-catalog";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export function CreatorHero({ title, subtitle, media, mediaPc, mediaMobile }: { title: string; subtitle: string | null; media: string | null; mediaPc?: string | null; mediaMobile?: string | null }) {
   // Use device-specific images if available, otherwise fallback to the original media URL
@@ -236,6 +238,50 @@ function Design({ section, items }: { section: Section; items: SectionItem[] }) 
   );
 }
 
+function CardItem({ item }: { item: SectionItem }) {
+  const storedImages = Array.isArray(item.meta?.image_urls) ? item.meta.image_urls.filter((url): url is string => typeof url === "string") : [];
+  const images = [item.media_url, ...storedImages].filter((url, index, all): url is string => Boolean(url) && all.indexOf(url) === index);
+  const [activeImage, setActiveImage] = useState(0);
+  const hasCarousel = images.length > 3;
+  const showImage = images[activeImage] ?? images[0];
+  const move = (direction: number) => setActiveImage((current) => (current + direction + images.length) % images.length);
+
+  return (
+    <article className="overflow-hidden rounded-md border border-border bg-card">
+      {images.length > 0 && (hasCarousel ? (
+        <div className="relative aspect-square bg-muted">
+          <MediaImg src={showImage} alt={item.alt_text ?? item.title} className="h-full w-full object-cover" loading="lazy" />
+          {images.length > 1 && <>
+            <button type="button" onClick={() => move(-1)} aria-label="Previous card image" className="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white"><ChevronLeft className="h-4 w-4" /></button>
+            <button type="button" onClick={() => move(1)} aria-label="Next card image" className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white"><ChevronRight className="h-4 w-4" /></button>
+          </>}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-1 bg-muted md:grid-cols-3">
+          {images.slice(0, 3).map((image) => <MediaImg key={image} src={image} alt={item.alt_text ?? item.title} className="aspect-square h-full w-full object-cover" loading="lazy" />)}
+        </div>
+      ))}
+      <div className="p-5">
+        <h3 className="font-heading text-xl">{item.title}</h3>
+        {item.subtitle && <p className="mt-1 text-sm text-accent">{item.subtitle}</p>}
+        {item.body && <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.body}</p>}
+        {item.link_url && <a href={item.link_url} target="_blank" rel="noreferrer" className="mt-4 inline-block text-xs uppercase tracking-widest text-accent hover:underline">Open link</a>}
+      </div>
+    </article>
+  );
+}
+
+function Cards({ section, items }: { section: Section; items: SectionItem[] }) {
+  return (
+    <section className="py-20 md:py-28">
+      <SectionHeader section={section} />
+      <div className="mx-auto grid max-w-6xl gap-6 px-6 md:grid-cols-2">
+        {itemsFor(items, section.id).map((item) => <CardItem key={item.id} item={item} />)}
+      </div>
+    </section>
+  );
+}
+
 function About({ section, items }: { section: Section; items: SectionItem[] }) {
   const it = itemsFor(items, section.id)[0];
   return (
@@ -312,11 +358,12 @@ function Contact({ section }: { section: Section }) {
 }
 
 export function CreatorSectionRenderer({ section, items, testimonials }: { section: Section; items: SectionItem[]; testimonials: Testimonial[] }) {
-  switch (section.key) {
+  switch (normalizedSectionKey(section.key)) {
     case "photography": return <Photography section={section} items={items} />;
     case "videography": return <Videography section={section} items={items} />;
-    case "editing": return <Editing section={section} items={items} />;
-    case "design": return <Design section={section} items={items} />;
+    case "before-after": return <Editing section={section} items={items} />;
+    case "branding": return <Design section={section} items={items} />;
+    case "cards": return <Cards section={section} items={items} />;
     case "about": return <About section={section} items={items} />;
     case "testimonials": return <Testimonials section={section} testimonials={testimonials} />;
     case "contact": return <Contact section={section} />;

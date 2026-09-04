@@ -8,6 +8,7 @@ import { ModeTransition } from "@/components/site/mode-transition";
 import { SiteLogo } from "@/components/site/site-logo";
 import { CreatorHero, CreatorSectionRenderer } from "@/components/site/creator-sections";
 import { DeveloperHero, DeveloperSectionRenderer } from "@/components/site/developer-sections";
+import { ModeBreaker } from "@/components/site/mode-breaker";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -23,6 +24,7 @@ function Index() {
       <Suspense fallback={<div className="min-h-screen bg-background" />}>
         <SiteContent />
       </Suspense>
+      <ModeBreaker />
       <SiteFooter />
     </>
   );
@@ -52,8 +54,14 @@ function SiteContent() {
 
 function SiteFooter() {
   return (
-    <footer className="border-t border-border py-8 text-center font-body text-xs text-muted-foreground">
-      <p>© {new Date().getFullYear()} Dinesh Raja</p>
+    <footer className="border-t border-border px-6 py-8 font-body text-xs text-muted-foreground">
+      <div className="mx-auto flex max-w-6xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="font-heading text-sm text-foreground">Dinesh Raja</p>
+          <p className="mt-1">Photography, branding, and software experiments.</p>
+        </div>
+        <p>© {new Date().getFullYear()} · Built across two sides.</p>
+      </div>
     </footer>
   );
 }

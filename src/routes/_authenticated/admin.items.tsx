@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadMediaFile } from "@/lib/upload-media";
 import { toast } from "sonner";
@@ -24,6 +24,8 @@ type Item = {
   tags: string[]; order_index: number; link_url: string | null; is_visible: boolean; meta: unknown;
 };
 
+const EMPTY_ITEMS: Item[] = [];
+
 function ItemsPage() {
   const qc = useQueryClient();
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -37,7 +39,7 @@ function ItemsPage() {
   });
   const [sectionId, setSectionId] = useState<string | null>(null);
   const active = sectionId ?? sections[0]?.id ?? null;
-  const { data: items = [] } = useQuery({
+  const { data: items = EMPTY_ITEMS } = useQuery({
     queryKey: ["admin", "items", active],
     enabled: !!active,
     queryFn: async () => {
@@ -48,6 +50,10 @@ function ItemsPage() {
   });
   const [editing, setEditing] = useState<Item | null>(null);
   const [itemsLocal, setItemsLocal] = useState<Item[]>(items);
+
+  useEffect(() => {
+    setItemsLocal(items);
+  }, [items]);
   
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 

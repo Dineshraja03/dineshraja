@@ -52,11 +52,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
       <main className="flex-1 overflow-x-hidden">
         {/* Mobile top bar */}
-        <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background/90 px-4 py-3 backdrop-blur md:hidden">
+        <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background/90 px-4 py-4 backdrop-blur md:hidden">
           <Link to="/" className="font-heading text-base">Portfolio CMS</Link>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <a href="/" target="_blank" rel="noreferrer" aria-label="View site"><ExternalLink className="h-4 w-4" /></a>
-            <button onClick={signOut} aria-label="Sign out"><LogOut className="h-4 w-4" /></button>
+            <Link to="/admin/notifications" aria-label="Notifications"><Bell className="h-5 w-5" /></Link>
+            <Link to="/admin/settings" aria-label="Site settings"><Settings className="h-5 w-5" /></Link>
+            <a href="/" target="_blank" rel="noreferrer" aria-label="View site"><ExternalLink className="h-5 w-5" /></a>
+            <button onClick={signOut} aria-label="Sign out"><LogOut className="h-5 w-5" /></button>
           </div>
         </header>
 
@@ -71,7 +73,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
       {/* Mobile bottom navigation */}
       <nav className="fixed inset-x-0 bottom-0 z-50 flex items-stretch justify-between border-t border-border bg-background/95 backdrop-blur md:hidden">
-        {nav.map((n) => (
+        {nav.filter((n) => n.to !== "/admin/notifications" && n.to !== "/admin/settings").map((n) => (
           <Link key={n.to} to={n.to}
             className={`flex flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] leading-tight transition ${isActive(n.to) ? "text-accent" : "text-muted-foreground"}`}>
             <n.icon className="h-4 w-4" />
